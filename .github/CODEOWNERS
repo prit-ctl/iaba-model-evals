@@ -3,25 +3,25 @@
 # Format: <path> <owner>
 
 # Global fallback: Repository administrator
-*       @pritxxh
+*       @prit-ctl
 
 # Domain 1: Agentic AI & Tool Calling (IABA-6 / IABA-8)
-/domains/01-agentic-reconciliation/     @pritxxh
+/domains/01-agentic-reconciliation/     @prit-ctl
 
 # Domain 2: RAG & Compliance Policy Knowledge (IABA-5)
-/domains/02-rag-compliance/             @pritxxh
+/domains/02-rag-compliance/             @prit-ctl
 
 # Domain 3: Structured Clinical Data Extraction (IABA-3)
-/domains/03-structured-extraction/      @pritxxh
+/domains/03-structured-extraction/      @prit-ctl
 
 # Domain 4: Software Engineering & Code Generation (IABA-1)
-/domains/04-software-engineering/       @pritxxh
+/domains/04-software-engineering/       @prit-ctl
 
 # Domain 5: Complex Reasoning & Supply Chain (IABA-4)
-/domains/05-complex-reasoning/          @pritxxh
+/domains/05-complex-reasoning/          @prit-ctl
 
 # Domain 6: Database Systems & Query Optimization (IABA-7)
-/domains/06-database-optimization/      @pritxxh
+/domains/06-database-optimization/      @prit-ctl
 
 # Domain 7: Support Ticket Classification & Summarization (IABA-2)
-/domains/07-classification-triage/      @pritxxh
+/domains/07-classification-triage/      @prit-ctl
