@@ -1,0 +1,27 @@
+# GitHub CODEOWNERS for IABA Model Evaluation Monorepo
+# Lines starting with '#' are comments.
+# Format: <path> <owner>
+
+# Global fallback: Repository administrator
+*       @pritxxh
+
+# Domain 1: Agentic AI & Tool Calling (IABA-6 / IABA-8)
+/domains/01-agentic-reconciliation/     @pritxxh
+
+# Domain 2: RAG & Compliance Policy Knowledge (IABA-5)
+/domains/02-rag-compliance/             @pritxxh
+
+# Domain 3: Structured Clinical Data Extraction (IABA-3)
+/domains/03-structured-extraction/      @pritxxh
+
+# Domain 4: Software Engineering & Code Generation (IABA-1)
+/domains/04-software-engineering/       @pritxxh
+
+# Domain 5: Complex Reasoning & Supply Chain (IABA-4)
+/domains/05-complex-reasoning/          @pritxxh
+
+# Domain 6: Database Systems & Query Optimization (IABA-7)
+/domains/06-database-optimization/      @pritxxh
+
+# Domain 7: Support Ticket Classification & Summarization (IABA-2)
+/domains/07-classification-triage/      @pritxxh

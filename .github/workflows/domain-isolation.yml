@@ -1,0 +1,36 @@
+name: Domain Isolation & PR Guardrails
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  validate-domain-isolation:
+    name: Verify Single Domain Boundary
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Analyze Changed Files
+        id: diff-check
+        run: |
+          # Compare PR branch with target base branch
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          # Extract unique domain directories touched under domains/
+          DOMAINS_TOUCHED=$(echo "$CHANGED_FILES" | grep '^domains/' | cut -d/ -f2 | sort -u || true)
+          DOMAIN_COUNT=$(echo "$DOMAINS_TOUCHED" | grep -v '^$' | wc -l | xargs)
+
+          echo "Domains touched: $DOMAINS_TOUCHED (Count: $DOMAIN_COUNT)"
+
+          if [ "$DOMAIN_COUNT" -gt 1 ]; then
+            echo "::error::This pull request modifies files in multiple domain directories ($DOMAINS_TOUCHED). Please submit changes only to your assigned domain folder."
+            exit 1
+          fi
+
+          echo "Domain isolation check passed successfully!"
