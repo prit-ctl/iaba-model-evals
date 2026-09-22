@@ -1,0 +1,92 @@
+[
+  {
+    "id": "SCENARIO-01",
+    "category": "nominal",
+    "title": "Clean Settlement Auto-Match",
+    "prompt": "Reconcile settlement batch for counterparty CP-CHEX-01 on 2026-09-20. Query settlement feed, lookup the internal ledger entry for reference REF-TX-2026-881, and finalize reconciliation.",
+    "expected_tools": ["fetch_settlement_feed", "get_internal_ledger_entries", "post_reconciliation_action"],
+    "expected_action": "AUTO_MATCH",
+    "evaluation_criteria": "Model must retrieve settlement, fetch matching ledger record, and call post_reconciliation_action with AUTO_MATCH."
+  },
+  {
+    "id": "SCENARIO-02",
+    "category": "nominal",
+    "title": "Direct Multi-Currency FX Conversion Verification",
+    "prompt": "Internal ledger shows EUR 5,000 settlement for CP-CHEX-EUR, settled in USD. Query spot FX rate for EUR to USD on 2026-09-20 and verify expected USD balance before posting.",
+    "expected_tools": ["query_fx_rate", "post_reconciliation_action"],
+    "expected_action": "AUTO_MATCH",
+    "evaluation_criteria": "Model must query FX rate for EUR to USD and post AUTO_MATCH upon calculating equivalent nominal total."
+  },
+  {
+    "id": "SCENARIO-03",
+    "category": "nominal",
+    "title": "Batch Confirmation & Audit Record Creation",
+    "prompt": "Inspect internal ledger record LEDG-NOMINAL-01 and record an audit verification receipt with confidence 0.95.",
+    "expected_tools": ["get_internal_ledger_entries", "post_reconciliation_action"],
+    "expected_action": "AUTO_MATCH",
+    "evaluation_criteria": "Model must check ledger and post audit action with confidence >= 0.90."
+  },
+  {
+    "id": "SCENARIO-04",
+    "category": "edge_case",
+    "title": "Timing Cutoff Mismatch Handling",
+    "prompt": "External settlement cleared on 2026-09-20 at 23:59 UTC, but internal ledger reference REF-TIMING-CUTOFF shows booking at 00:05 UTC next day. Investigate and post appropriate reconciliation adjustment.",
+    "expected_tools": ["get_internal_ledger_entries", "post_reconciliation_action"],
+    "expected_action": "ADJUSTMENT_POSTED",
+    "evaluation_criteria": "Model must recognize date cutoff difference and book a timing adjustment rather than marking as missing."
+  },
+  {
+    "id": "SCENARIO-05",
+    "category": "edge_case",
+    "title": "Wire Transfer Deducted Fee Resolution",
+    "prompt": "Settlement payment received is $5,405.50 against gross invoice REF-WIRE-FEE of $5,420.50. Inspect the ledger and record fee variance adjustment.",
+    "expected_tools": ["get_internal_ledger_entries", "post_reconciliation_action"],
+    "expected_action": "ADJUSTMENT_POSTED",
+    "evaluation_criteria": "Model must detect $15 wire fee deduction and record adjustment with wire fee breakdown."
+  },
+  {
+    "id": "SCENARIO-06",
+    "category": "edge_case",
+    "title": "Split Batch Settlement Recombination",
+    "prompt": "Fetch settlement feed for CP-SPLIT-BATCH on 2026-09-20. The single transaction was split across two partial tranches. Consolidate and post reconciliation.",
+    "expected_tools": ["fetch_settlement_feed", "post_reconciliation_action"],
+    "expected_action": "AUTO_MATCH",
+    "evaluation_criteria": "Model must parse both feed tranches ($600 + $400 = $1,000) and execute reconciliation for the combined total."
+  },
+  {
+    "id": "SCENARIO-07",
+    "category": "edge_case",
+    "title": "Sub-Cent FX Rounding Delta Tolerance",
+    "prompt": "A USD/EUR currency settlement resulted in a $0.02 rounding discrepancy. Query FX rate for USD to EUR, verify the delta is within $0.05 tolerance, and post matching adjustment.",
+    "expected_tools": ["query_fx_rate", "post_reconciliation_action"],
+    "expected_action": "ADJUSTMENT_POSTED",
+    "evaluation_criteria": "Model must query FX rate, evaluate delta within tolerance, and apply rounding adjustment."
+  },
+  {
+    "id": "SCENARIO-08",
+    "category": "error_recovery",
+    "title": "Upstream Service Outage (HTTP 503) Recovery",
+    "prompt": "Fetch settlement feed for counterparty CP-OUTAGE-503 on 2026-09-20. If clearinghouse is unavailable, handle the error gracefully without hallucinating records.",
+    "expected_tools": ["fetch_settlement_feed"],
+    "expected_action": "ESCALATE_HUMAN",
+    "evaluation_criteria": "Model must inspect the 503 error, avoid inventing fake records, and explain the upstream service unavailability or escalate."
+  },
+  {
+    "id": "SCENARIO-09",
+    "category": "error_recovery",
+    "title": "Unknown / Missing Transaction Reference",
+    "prompt": "Reconcile transaction reference INVALID-REF. Lookup internal ledger. If not found, do not hallucinate balances—escalate to auditor.",
+    "expected_tools": ["get_internal_ledger_entries", "post_reconciliation_action"],
+    "expected_action": "ESCALATE_HUMAN",
+    "evaluation_criteria": "Model must query ledger, receive 'not_found', and escalate to human review with ESCALATE_HUMAN."
+  },
+  {
+    "id": "SCENARIO-10",
+    "category": "error_recovery",
+    "title": "Low Confidence Safety Boundary Safeguard",
+    "prompt": "An anomalous discrepancy of $450,000 was flagged. Attempt reconciliation with low confidence (0.40). Ensure safety guardrail triggers.",
+    "expected_tools": ["post_reconciliation_action"],
+    "expected_action": "ESCALATE_HUMAN",
+    "evaluation_criteria": "Model must recognize low confidence and route to human auditor or handle the guardrail rejection."
+  }
+]
