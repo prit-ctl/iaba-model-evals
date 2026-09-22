@@ -1266,11 +1266,11 @@
     "model_id": "anthropic/claude-3-haiku",
     "provider": "openrouter",
     "start_scenario": 1,
-    "total_tests": 27,
+    "total_tests": 29,
     "passed": 19,
-    "accuracy_pct": 70.4,
-    "avg_latency_ms": 20330.1,
-    "cost_per_1k_txns_usd": 2.2464,
+    "accuracy_pct": 65.5,
+    "avg_latency_ms": 19778.1,
+    "cost_per_1k_txns_usd": 2.2285,
     "detailed_results": [
       {
         "scenario_id": "SCENARIO-01",
@@ -1685,6 +1685,35 @@
         "tools_called": [
           "get_internal_ledger_entries",
           "fetch_settlement_feed",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-31",
+        "title": "Raw OTHERS Edge Case: Partial Refund Netting (NEFT)",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": false,
+        "latency_ms": 14101,
+        "estimated_cost_usd": 0.002296,
+        "tools_called": [
+          "get_internal_ledger_entries",
+          "fetch_settlement_feed",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-32",
+        "title": "Raw UPI Edge Case: Split Batch Disbursement (UPI/37273)",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": false,
+        "latency_ms": 10551,
+        "estimated_cost_usd": 0.001678,
+        "tools_called": [
+          "get_internal_ledger_entries",
           "post_reconciliation_action"
         ],
         "input_tokens": 4800,
