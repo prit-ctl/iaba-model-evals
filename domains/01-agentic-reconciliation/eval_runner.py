@@ -26,11 +26,22 @@ try:
     from langfuse import Langfuse
     LANGFUSE_AVAILABLE = bool(os.getenv("LANGFUSE_PUBLIC_KEY") and os.getenv("LANGFUSE_SECRET_KEY"))
     if LANGFUSE_AVAILABLE:
+        host = os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com")
         langfuse_client = Langfuse(
             public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
             secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
-            host=os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com")
+            host=host
         )
+        # Verify connectivity and host matching early
+        try:
+            if not langfuse_client.auth_check():
+                print(f"[WARN] Langfuse auth check failed for host: {host}. Check credentials.")
+            else:
+                print(f"[INFO] Langfuse connected successfully to {host}")
+        except Exception as auth_err:
+            print(f"[WARN] Langfuse authentication verification error: {auth_err}")
+            print("Tip: If you are using EU data region, set LANGFUSE_HOST=\"https://cloud.langfuse.com\"")
+            print("     If using US data region, set LANGFUSE_HOST=\"https://us.cloud.langfuse.com\"")
     else:
         langfuse_client = None
 except Exception as e:
