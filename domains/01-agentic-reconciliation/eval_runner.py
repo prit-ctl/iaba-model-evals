@@ -436,10 +436,50 @@ def main():
                 summary = evaluate_model(m, dataset_path, mock_mode=True, provider=provider, start_from=start_from, limit=limit)
                 all_summaries.append(summary)
 
-    # Save summary report to JSON
+    # Save summary report to JSON (merge into existing report if present)
     report_file = os.path.join(os.path.dirname(__file__), "eval_report.json")
+    existing_reports = []
+    if os.path.exists(report_file):
+        try:
+            with open(report_file, "r") as f:
+                existing_reports = json.load(f)
+        except Exception:
+            existing_reports = []
+
+    # Map existing by model_id
+    merged_map = {r.get("model_id"): r for r in existing_reports if isinstance(r, dict) and "model_id" in r}
+    for new_s in all_summaries:
+        m_id = new_s.get("model_id")
+        if m_id in merged_map and (limit is not None or start_from > 1):
+            # Merge scenarios into existing detailed_results
+            existing_detail = {d["scenario_id"]: d for d in merged_map[m_id].get("detailed_results", [])}
+            for d in new_s.get("detailed_results", []):
+                existing_detail[d["scenario_id"]] = d
+            
+            all_details = list(existing_detail.values())
+            all_details.sort(key=lambda x: int(x["scenario_id"].split("-")[-1]) if "-" in x["scenario_id"] else 0)
+            
+            p_count = sum(1 for d in all_details if d.get("passed"))
+            tot = len(all_details)
+            acc = round((p_count / tot) * 100.0, 1) if tot else 0.0
+            avg_lat = round(sum(d.get("latency_ms", 0) for d in all_details) / tot, 1) if tot else 0.0
+            tot_cost = sum(d.get("estimated_cost_usd", 0) for d in all_details)
+            c_per_1k = round((tot_cost / tot) * 1000, 4) if tot else 0.0
+            
+            merged_map[m_id].update({
+                "total_tests": tot,
+                "passed": p_count,
+                "accuracy_pct": acc,
+                "avg_latency_ms": avg_lat,
+                "cost_per_1k_txns_usd": c_per_1k,
+                "detailed_results": all_details
+            })
+        else:
+            merged_map[m_id] = new_s
+
+    final_report = list(merged_map.values())
     with open(report_file, "w") as f:
-        json.dump(all_summaries, f, indent=2)
+        json.dump(final_report, f, indent=2)
     print(f"\nReport written to: {report_file}")
 
     # Flush Langfuse queue to ensure all traces/scores are uploaded before exit
