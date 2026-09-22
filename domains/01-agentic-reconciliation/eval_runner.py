@@ -283,12 +283,13 @@ def run_single_scenario(
                 messages.append({"role": "user", "content": tool_results})
             return int((time.time() - start_t) * 1000)
 
-    # Wrap inside Langfuse trace context so that real elapsed wall-clock time is captured
+    # Wrap inside Langfuse trace context so that real elapsed wall-clock time and cost metrics are captured
     if LANGFUSE_AVAILABLE and langfuse_client:
         try:
             with langfuse_client.start_as_current_observation(
                 name=f"eval-{scenario_id}",
-                as_type="agent",
+                as_type="generation",
+                model=model_id,
                 input={"prompt": scenario.get("prompt", "")},
                 metadata={
                     "model_id": model_id,
@@ -304,9 +305,12 @@ def run_single_scenario(
                 passed = tools_matched and action_matched and schema_valid
                 
                 in_rate, out_rate = MODEL_PRICING.get(model_id, MODEL_PRICING.get("default", (1.00, 3.00)))
-                estimated_cost = (total_input_tokens * (in_rate / 1_000_000.0)) + (total_output_tokens * (out_rate / 1_000_000.0))
+                input_cost = total_input_tokens * (in_rate / 1_000_000.0)
+                output_cost = total_output_tokens * (out_rate / 1_000_000.0)
+                estimated_cost = input_cost + output_cost
                 
                 span.update(
+                    model=model_id,
                     output={"actions_taken": actions_taken, "tools_called": tools_called},
                     metadata={
                         "model_id": model_id,
@@ -316,7 +320,7 @@ def run_single_scenario(
                         "expected_tools": expected_tools,
                     },
                     usage_details={"input": total_input_tokens, "output": total_output_tokens},
-                    cost_details={"total": estimated_cost}
+                    cost_details={"input": input_cost, "output": output_cost, "total": estimated_cost}
                 )
                 span.score(name="accuracy", value=1.0 if passed else 0.0, comment=f"Expected: {expected_action}, Got: {actions_taken}")
                 span.score(name="latency_ms", value=float(elapsed_ms))
