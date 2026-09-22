@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 class FetchSettlementFeedInput(BaseModel):
     """Input parameters for fetching external clearinghouse settlement records."""
     date: str = Field(description="ISO-8601 date string (YYYY-MM-DD) of the settlement feed.")
-    counterparty_id: str = Field(description="Unique counterparty or clearinghouse identifier (e.g. CP-CHEX-99).")
+    counterparty_id: str = Field(default="CP-CHEX-99", description="Unique counterparty or clearinghouse identifier (e.g. CP-CHEX-99, NPCI, VISA, MASTERCARD). Defaults to 'CP-CHEX-99' if unspecified.")
 
 
 class GetInternalLedgerEntriesInput(BaseModel):
