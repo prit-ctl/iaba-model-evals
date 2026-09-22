@@ -25,8 +25,15 @@ from mocks.api_handlers import execute_mock_tool
 try:
     from langfuse import Langfuse
     LANGFUSE_AVAILABLE = bool(os.getenv("LANGFUSE_PUBLIC_KEY") and os.getenv("LANGFUSE_SECRET_KEY"))
-    langfuse_client = Langfuse() if LANGFUSE_AVAILABLE else None
-except Exception:
+    if LANGFUSE_AVAILABLE:
+        langfuse_client = Langfuse(
+            public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
+            secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
+            host=os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com")
+        )
+    else:
+        langfuse_client = None
+except Exception as e:
     LANGFUSE_AVAILABLE = False
     langfuse_client = None
 
@@ -167,13 +174,38 @@ def run_single_scenario(
     # Optional Langfuse trace logging
     if LANGFUSE_AVAILABLE and langfuse_client:
         try:
-            trace = langfuse_client.trace(
-                name=f"eval-{scenario_id}",
-                metadata={"model_id": model_id, "category": scenario["category"]},
-                tags=["iaba-eval", scenario["category"]]
-            )
-            trace.score(name="accuracy", value=1.0 if passed else 0.0)
-            trace.score(name="latency_ms", value=elapsed_ms)
+            # Langfuse SDK v4+ observation / span API
+            if hasattr(langfuse_client, "start_observation"):
+                trace_id = langfuse_client.create_trace_id()
+                obs = langfuse_client.start_observation(
+                    name=f"eval-{scenario_id}",
+                    trace_context={"trace_id": trace_id},
+                    as_type="agent",
+                    input={"prompt": scenario.get("prompt", "")},
+                    output={"actions_taken": actions_taken, "tools_called": tools_called},
+                    metadata={"model_id": model_id, "category": scenario.get("category", "")},
+                    usage_details={"input": total_input_tokens, "output": total_output_tokens}
+                )
+                obs.end()
+                langfuse_client.create_score(
+                    trace_id=trace_id,
+                    name="accuracy",
+                    value=1.0 if passed else 0.0,
+                    comment=f"Expected: {expected_action}, Got: {actions_taken}"
+                )
+                langfuse_client.create_score(
+                    trace_id=trace_id,
+                    name="latency_ms",
+                    value=float(elapsed_ms)
+                )
+            elif hasattr(langfuse_client, "trace"):
+                trace = langfuse_client.trace(
+                    name=f"eval-{scenario_id}",
+                    metadata={"model_id": model_id, "category": scenario["category"]},
+                    tags=["iaba-eval", scenario["category"]]
+                )
+                trace.score(name="accuracy", value=1.0 if passed else 0.0)
+                trace.score(name="latency_ms", value=elapsed_ms)
         except Exception as e:
             pass  # Tracing failure should never crash the benchmark
             
@@ -260,6 +292,17 @@ def main():
     with open(report_file, "w") as f:
         json.dump(all_summaries, f, indent=2)
     print(f"\nReport written to: {report_file}")
+
+    # Flush Langfuse queue to ensure all traces/scores are uploaded before exit
+    if LANGFUSE_AVAILABLE and langfuse_client:
+        print("\nUploading traces and metrics to Langfuse...")
+        try:
+            langfuse_client.flush()
+            print("Successfully flushed all traces and evaluation scores to Langfuse!")
+        except Exception as e:
+            print(f"Warning: Failed to flush Langfuse events: {e}")
+    else:
+        print("\n[NOTE] Langfuse credentials not detected. Set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY to push traces to your dashboard.")
 
 
 if __name__ == "__main__":
