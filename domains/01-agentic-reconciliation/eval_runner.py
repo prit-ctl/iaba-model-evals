@@ -21,12 +21,28 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from schemas.tools import get_bedrock_tools
 from mocks.api_handlers import execute_mock_tool
 
+# Load environment variables from .env if present
+env_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+if os.path.exists(env_file):
+    try:
+        with open(env_file, "r") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
+                    k = k.strip()
+                    v = v.strip().strip("'\"")
+                    if k not in os.environ or not os.environ[k]:
+                        os.environ[k] = v
+    except Exception:
+        pass
+
 # Optional Langfuse Integration (graceful fallback if not configured)
 try:
     from langfuse import Langfuse
     LANGFUSE_AVAILABLE = bool(os.getenv("LANGFUSE_PUBLIC_KEY") and os.getenv("LANGFUSE_SECRET_KEY"))
     if LANGFUSE_AVAILABLE:
-        host = os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com")
+        host = os.getenv("LANGFUSE_HOST") or os.getenv("LANGFUSE_BASE_URL") or "https://cloud.langfuse.com"
         langfuse_client = Langfuse(
             public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
             secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
@@ -101,7 +117,7 @@ def run_single_scenario(
     
     # In mock evaluation mode (when AWS Bedrock model access is not yet activated on the account)
     if mock_mode:
-        time.sleep(0.05)  # Simulate small latency
+        time.sleep(0.12)  # Simulate small realistic latency & prevent burst rate limits on cloud dashboard
         # Deterministic simulation of expected model tool selection
         tools_called = scenario["expected_tools"]
         actions_taken = [scenario["expected_action"]]
@@ -185,38 +201,29 @@ def run_single_scenario(
     # Optional Langfuse trace logging
     if LANGFUSE_AVAILABLE and langfuse_client:
         try:
-            # Langfuse SDK v4+ observation / span API
-            if hasattr(langfuse_client, "start_observation"):
-                trace_id = langfuse_client.create_trace_id()
-                obs = langfuse_client.start_observation(
-                    name=f"eval-{scenario_id}",
-                    trace_context={"trace_id": trace_id},
-                    as_type="agent",
-                    input={"prompt": scenario.get("prompt", "")},
-                    output={"actions_taken": actions_taken, "tools_called": tools_called},
-                    metadata={"model_id": model_id, "category": scenario.get("category", "")},
-                    usage_details={"input": total_input_tokens, "output": total_output_tokens}
-                )
-                obs.end()
-                langfuse_client.create_score(
-                    trace_id=trace_id,
+            with langfuse_client.start_as_current_observation(
+                name=f"eval-{scenario_id}",
+                as_type="agent",
+                input={"prompt": scenario.get("prompt", "")},
+                output={"actions_taken": actions_taken, "tools_called": tools_called},
+                metadata={
+                    "model_id": model_id,
+                    "category": scenario.get("category", ""),
+                    "title": scenario.get("title", ""),
+                    "expected_action": expected_action,
+                    "expected_tools": expected_tools,
+                },
+                usage_details={"input": total_input_tokens, "output": total_output_tokens}
+            ) as span:
+                span.score(
                     name="accuracy",
                     value=1.0 if passed else 0.0,
                     comment=f"Expected: {expected_action}, Got: {actions_taken}"
                 )
-                langfuse_client.create_score(
-                    trace_id=trace_id,
+                span.score(
                     name="latency_ms",
                     value=float(elapsed_ms)
                 )
-            elif hasattr(langfuse_client, "trace"):
-                trace = langfuse_client.trace(
-                    name=f"eval-{scenario_id}",
-                    metadata={"model_id": model_id, "category": scenario["category"]},
-                    tags=["iaba-eval", scenario["category"]]
-                )
-                trace.score(name="accuracy", value=1.0 if passed else 0.0)
-                trace.score(name="latency_ms", value=elapsed_ms)
         except Exception as e:
             pass  # Tracing failure should never crash the benchmark
             
@@ -308,8 +315,8 @@ def main():
     if LANGFUSE_AVAILABLE and langfuse_client:
         print("\nUploading traces and metrics to Langfuse...")
         try:
-            langfuse_client.flush()
-            print("Successfully flushed all traces and evaluation scores to Langfuse!")
+            langfuse_client.shutdown()
+            print("Successfully uploaded all traces and evaluation scores to Langfuse!")
         except Exception as e:
             print(f"Warning: Failed to flush Langfuse events: {e}")
     else:
