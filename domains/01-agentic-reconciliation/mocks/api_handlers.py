@@ -1,7 +1,7 @@
 """Deterministic mock API handlers for Agentic AI Reconciliation tools.
 
+Configured with realistic Indian banking identifiers (UPI UTRs, NEFT, RTGS, INR balances).
 Requires no external databases or network calls.
-Produces deterministic, predictable responses based on input arguments.
 """
 
 from typing import Any, Dict
@@ -32,36 +32,37 @@ def _mock_fetch_settlement_feed(args: Dict[str, Any]) -> Dict[str, Any]:
     counterparty = args.get("counterparty_id", "")
     date = args.get("date", "")
     
-    # Adversarial test: simulated upstream 503 outage
+    # Adversarial test: simulated NPCI / bank gateway 503 outage
     if counterparty == "CP-OUTAGE-503":
         return {
             "status": "error",
             "http_code": 503,
-            "error": "ServiceUnavailable",
-            "message": "Clearinghouse endpoint down for scheduled maintenance. Retry-After: 30s."
+            "error": "GatewayUnavailable",
+            "message": "NPCI / Clearinghouse switch temporarily unavailable. Retry-After: 30s."
         }
         
-    # Edge case: split batch
+    # Edge case: split QR payment batch (Tranche 1: ₹60k + Tranche 2: ₹40k = ₹1 Lakh)
     if counterparty == "CP-SPLIT-BATCH":
         return {
             "status": "success",
             "records": [
-                {"feed_id": "FEED-PART-1", "amount": 600.00, "currency": "USD", "ref": "BATCH-SPLIT-99", "date": date},
-                {"feed_id": "FEED-PART-2", "amount": 400.00, "currency": "USD", "ref": "BATCH-SPLIT-99", "date": date}
+                {"feed_id": "FEED-TRANCHE-1", "amount": 60000.00, "currency": "INR", "ref": "BATCH-QR-SPLIT-88", "date": date},
+                {"feed_id": "FEED-TRANCHE-2", "amount": 40000.00, "currency": "INR", "ref": "BATCH-QR-SPLIT-88", "date": date}
             ]
         }
 
-    # Standard nominal or discrepancy return
+    # Standard nominal return: UPI merchant batch
     return {
         "status": "success",
         "records": [
             {
                 "feed_id": "FEED-REC-001",
                 "counterparty": counterparty,
-                "amount": 5420.50,
-                "currency": "USD",
+                "amount": 250000.00,
+                "currency": "INR",
                 "settlement_date": date,
-                "ref_number": "REF-TX-2026-881"
+                "ref_number": "UPI/CR/426188291042/HDFC",
+                "payer_vpa": "customer@okhdfcbank"
             }
         ]
     }
@@ -77,29 +78,31 @@ def _mock_get_internal_ledger_entries(args: Dict[str, Any]) -> Dict[str, Any]:
             "message": f"No ledger records match reference: {ref}"
         }
         
-    # Discrepancy case: Timing cutoff
-    if "TIMING-CUTOFF" in ref:
+    # Edge case: NEFT cutoff timing mismatch
+    if "CUTOFF" in ref:
         return {
             "status": "found",
             "ledger_entry": {
-                "ledger_id": "LEDG-8812",
-                "amount": 5420.50,
-                "currency": "USD",
-                "booking_timestamp": "2026-09-21T00:05:00Z",
-                "status": "POSTED"
+                "ledger_id": "LEDG-NEFT-8812",
+                "amount": 150000.00,
+                "currency": "INR",
+                "booking_timestamp": "2026-09-21T00:04:00+05:30",
+                "status": "POSTED",
+                "utr": "NEFT/N08226019283"
             }
         }
 
-    # Discrepancy case: Wire fee deduction ($15 wire fee deducted)
+    # Edge case: RTGS transfer fee deduction (₹2,50,000 gross minus ₹29.50 charges = ₹2,49,970.50 net)
     if "WIRE-FEE" in ref:
         return {
             "status": "found",
             "ledger_entry": {
-                "ledger_id": "LEDG-9944",
-                "gross_amount": 5420.50,
-                "wire_fee_expected": 15.00,
-                "net_amount": 5405.50,
-                "currency": "USD"
+                "ledger_id": "LEDG-RTGS-9944",
+                "gross_amount": 250000.00,
+                "rtgs_charges_gst": 29.50,
+                "net_amount": 249970.50,
+                "currency": "INR",
+                "party": "INFRA-STEEL-LTD"
             }
         }
 
@@ -108,10 +111,11 @@ def _mock_get_internal_ledger_entries(args: Dict[str, Any]) -> Dict[str, Any]:
         "status": "found",
         "ledger_entry": {
             "ledger_id": "LEDG-NOMINAL-01",
-            "amount": 5420.50,
-            "currency": "USD",
+            "amount": 250000.00,
+            "currency": "INR",
             "booking_date": "2026-09-20",
-            "account": "1010-CASH-SETTLEMENT"
+            "account": "1010-HDFC-CURRENT-A/C",
+            "utr": "UPI/CR/426188291042/HDFC"
         }
     }
 
@@ -120,12 +124,14 @@ def _mock_query_fx_rate(args: Dict[str, Any]) -> Dict[str, Any]:
     from_curr = args.get("from_currency", "").upper()
     to_curr = args.get("to_currency", "").upper()
     
-    # Fixed deterministic rates
+    # Deterministic RBI reference conversion rates
     rates = {
-        ("USD", "EUR"): 0.9215,
-        ("EUR", "USD"): 1.0852,
-        ("USD", "GBP"): 0.7740,
-        ("GBP", "USD"): 1.2919
+        ("USD", "INR"): 83.92,
+        ("INR", "USD"): 0.0119,
+        ("EUR", "INR"): 93.45,
+        ("INR", "EUR"): 0.0107,
+        ("GBP", "INR"): 111.20,
+        ("INR", "GBP"): 0.0090
     }
     
     rate = rates.get((from_curr, to_curr), 1.0)
@@ -133,7 +139,8 @@ def _mock_query_fx_rate(args: Dict[str, Any]) -> Dict[str, Any]:
         "status": "success",
         "pair": f"{from_curr}/{to_curr}",
         "spot_rate": rate,
-        "as_of": args.get("timestamp", "2026-09-20T12:00:00Z")
+        "as_of": args.get("timestamp", "2026-09-20T12:00:00+05:30"),
+        "source": "RBI_REFERENCE_RATE"
     }
 
 
@@ -141,17 +148,17 @@ def _mock_post_reconciliation_action(args: Dict[str, Any]) -> Dict[str, Any]:
     action = args.get("action_type", "")
     confidence = args.get("confidence", 0.0)
     
-    # Policy check: High value adjustment without confidence requires review
+    # Safeguard check: High value adjustment without high confidence requires human escalation
     if action == "ADJUSTMENT_POSTED" and confidence < 0.85:
         return {
             "status": "rejected",
             "reason": "CONFIDENCE_TOO_LOW",
-            "message": f"Automated adjustments require >= 0.85 confidence. Received {confidence}. Escalated to human audit."
+            "message": f"Automated adjustments require >= 0.85 confidence. Received {confidence}. Escalated to auditor."
         }
         
     return {
         "status": "executed",
-        "receipt_id": f"RCPT-{args.get('discrepancy_id', 'GEN')}-OK",
+        "receipt_id": f"RCPT-REC-{args.get('discrepancy_id', 'IN')}-OK",
         "action_recorded": action,
         "audit_logged": True
     }

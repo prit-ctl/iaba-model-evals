@@ -24,9 +24,9 @@ class TestAgenticReconciliation(unittest.TestCase):
 
     def test_mock_tool_execution(self):
         """Verify deterministic mock tool responses."""
-        res_fx = execute_mock_tool("query_fx_rate", {"from_currency": "USD", "to_currency": "EUR"})
+        res_fx = execute_mock_tool("query_fx_rate", {"from_currency": "USD", "to_currency": "INR"})
         self.assertEqual(res_fx["status"], "success")
-        self.assertEqual(res_fx["spot_rate"], 0.9215)
+        self.assertEqual(res_fx["spot_rate"], 83.92)
 
         res_err = execute_mock_tool("fetch_settlement_feed", {"counterparty_id": "CP-OUTAGE-503", "date": "2026-09-20"})
         self.assertEqual(res_err["status"], "error")
