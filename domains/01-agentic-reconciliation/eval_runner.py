@@ -18,7 +18,7 @@ import boto3
 
 # Add local path for modular imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from schemas.tools import get_bedrock_tools
+from schemas.tools import get_bedrock_tools, get_openai_tools
 from mocks.api_handlers import execute_mock_tool
 
 # Load environment variables from .env if present
@@ -28,6 +28,8 @@ if os.path.exists(env_file):
         with open(env_file, "r") as f:
             for line in f:
                 line = line.strip()
+                if line.startswith("export "):
+                    line = line[7:]
                 if line and not line.startswith("#") and "=" in line:
                     k, v = line.split("=", 1)
                     k = k.strip()
@@ -48,7 +50,6 @@ try:
             secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
             host=host
         )
-        # Verify connectivity and host matching early
         try:
             if not langfuse_client.auth_check():
                 print(f"[WARN] Langfuse auth check failed for host: {host}. Check credentials.")
@@ -56,8 +57,6 @@ try:
                 print(f"[INFO] Langfuse connected successfully to {host}")
         except Exception as auth_err:
             print(f"[WARN] Langfuse authentication verification error: {auth_err}")
-            print("Tip: If you are using EU data region, set LANGFUSE_HOST=\"https://cloud.langfuse.com\"")
-            print("     If using US data region, set LANGFUSE_HOST=\"https://us.cloud.langfuse.com\"")
     else:
         langfuse_client = None
 except Exception as e:
@@ -78,6 +77,45 @@ SYSTEM_PROMPT = (
     "Always use the provided tools to query feeds, check ledgers, verify FX rates, and post actions. "
     "If information is missing, services fail, or confidence is below 0.85, escalate to a human auditor."
 )
+
+# Pricing table per 1M tokens (input, output) in USD
+MODEL_PRICING = {
+    "amazon/nova-lite-v1": (0.06, 0.24),
+    "amazon/nova-2-lite-v1": (0.06, 0.24),
+    "amazon.nova-lite-v1:0": (0.06, 0.24),
+    "anthropic/claude-sonnet-4": (3.00, 15.00),
+    "anthropic/claude-3-haiku": (0.25, 1.25),
+    "anthropic.claude-sonnet-4-20250514-v1:0": (3.00, 15.00),
+    "default": (1.00, 3.00)
+}
+
+def call_openrouter_converse(
+    api_key: str,
+    model_id: str,
+    messages: List[Dict[str, Any]],
+    tools: List[Dict[str, Any]]
+) -> Dict[str, Any]:
+    """Calls OpenRouter OpenAI-compatible API with native tool calling."""
+    import httpx
+    url = "https://openrouter.ai/api/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://github.com/prit-ctl/iaba-model-evals",
+        "X-Title": "IABA Model Evaluations"
+    }
+    payload = {
+        "model": model_id,
+        "messages": messages,
+        "tools": tools,
+        "temperature": 0.0,
+        "max_tokens": 1024
+    }
+    with httpx.Client(timeout=60.0) as client:
+        res = client.post(url, headers=headers, json=payload)
+        if res.status_code != 200:
+            raise RuntimeError(f"OpenRouter API Error {res.status_code}: {res.text}")
+        return res.json()
 
 
 def call_bedrock_converse(
@@ -100,13 +138,12 @@ def run_single_scenario(
     bedrock_client: Any,
     model_id: str,
     scenario: Dict[str, Any],
-    mock_mode: bool = False
+    mock_mode: bool = False,
+    provider: str = "bedrock"
 ) -> Dict[str, Any]:
     """Runs a single test scenario across a multi-turn tool interaction loop."""
     scenario_id = scenario["id"]
     tools = get_bedrock_tools()
-    messages = [{"role": "user", "content": [{"text": scenario["prompt"]}]}]
-    
     tools_called = []
     actions_taken = []
     schema_valid = True
@@ -115,17 +152,60 @@ def run_single_scenario(
     
     start_time = time.time()
     
-    # In mock evaluation mode (when AWS Bedrock model access is not yet activated on the account)
     if mock_mode:
-        time.sleep(0.12)  # Simulate small realistic latency & prevent burst rate limits on cloud dashboard
-        # Deterministic simulation of expected model tool selection
+        time.sleep(0.08)  # Minimal pacing
         tools_called = scenario["expected_tools"]
         actions_taken = [scenario["expected_action"]]
         total_input_tokens = 350
         total_output_tokens = 120
-        elapsed_ms = int((time.time() - start_time) * 1000) + 180
+        elapsed_ms = int((time.time() - start_time) * 1000)
+    elif provider == "openrouter":
+        openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
+        if not openrouter_api_key:
+            raise ValueError("OPENROUTER_API_KEY not found in environment or .env file.")
+        
+        openai_tools = get_openai_tools()
+        chat_messages = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": scenario["prompt"]}
+        ]
+        
+        for _ in range(4):
+            resp = call_openrouter_converse(openrouter_api_key, model_id, chat_messages, openai_tools)
+            usage = resp.get("usage", {})
+            total_input_tokens += usage.get("prompt_tokens", 0)
+            total_output_tokens += usage.get("completion_tokens", 0)
+            
+            choice = resp["choices"][0]["message"]
+            chat_messages.append(choice)
+            
+            tool_calls = choice.get("tool_calls", [])
+            if not tool_calls:
+                break
+                
+            for tc in tool_calls:
+                t_name = tc["function"]["name"]
+                t_id = tc["id"]
+                try:
+                    t_args = json.loads(tc["function"].get("arguments", "{}"))
+                except Exception:
+                    t_args = {}
+                    
+                tools_called.append(t_name)
+                if t_name == "post_reconciliation_action":
+                    actions_taken.append(t_args.get("action_type", ""))
+                    
+                res_payload = execute_mock_tool(t_name, t_args)
+                chat_messages.append({
+                    "role": "tool",
+                    "tool_call_id": t_id,
+                    "name": t_name,
+                    "content": json.dumps(res_payload)
+                })
+        elapsed_ms = int((time.time() - start_time) * 1000)
     else:
         # Real AWS Bedrock Converse execution loop (max 4 turns)
+        messages = [{"role": "user", "content": [{"text": scenario["prompt"]}]}]
         max_turns = 4
         for _ in range(max_turns):
             response = call_bedrock_converse(bedrock_client, model_id, messages, tools)
@@ -179,8 +259,9 @@ def run_single_scenario(
     # 3. Overall pass/fail
     passed = tools_matched and action_matched and schema_valid
     
-    # 4. Token cost estimate (standard baseline: $3.00/1M input, $15.00/1M output)
-    estimated_cost = (total_input_tokens * 0.000003) + (total_output_tokens * 0.000015)
+    # 4. Token cost estimate dynamically calculated based on model pricing table
+    in_rate, out_rate = MODEL_PRICING.get(model_id, MODEL_PRICING.get("default", (1.00, 3.00)))
+    estimated_cost = (total_input_tokens * (in_rate / 1_000_000.0)) + (total_output_tokens * (out_rate / 1_000_000.0))
     
     result = {
         "scenario_id": scenario_id,
@@ -213,7 +294,8 @@ def run_single_scenario(
                     "expected_action": expected_action,
                     "expected_tools": expected_tools,
                 },
-                usage_details={"input": total_input_tokens, "output": total_output_tokens}
+                usage_details={"input": total_input_tokens, "output": total_output_tokens},
+                cost_details={"total": estimated_cost}
             ) as span:
                 span.score(
                     name="accuracy",
@@ -226,6 +308,7 @@ def run_single_scenario(
                 )
         except Exception as e:
             pass  # Tracing failure should never crash the benchmark
+            pass  # Tracing failure should never crash the benchmark
             
     return result
 
@@ -233,27 +316,28 @@ def run_single_scenario(
 def evaluate_model(
     model_id: str,
     scenarios_file: str,
-    mock_mode: bool = False
+    mock_mode: bool = False,
+    provider: str = "bedrock"
 ) -> Dict[str, Any]:
     """Runs all scenarios for a given model and calculates summary statistics."""
     with open(scenarios_file, "r") as f:
         scenarios = json.load(f)
         
     bedrock_client = None
-    if not mock_mode:
+    if not mock_mode and provider == "bedrock":
         bedrock_client = boto3.client("bedrock-runtime", region_name="us-east-1")
         
     print(f"\n========================================================")
-    print(f"Evaluating Model: {model_id} (Mock Mode: {mock_mode})")
+    print(f"Evaluating Model: {model_id} (Provider: {provider}, Mock: {mock_mode})")
     print(f"Total Scenarios: {len(scenarios)}")
     print(f"========================================================")
     
     results = []
     for sc in scenarios:
-        res = run_single_scenario(bedrock_client, model_id, sc, mock_mode=mock_mode)
+        res = run_single_scenario(bedrock_client, model_id, sc, mock_mode=mock_mode, provider=provider)
         results.append(res)
         status_icon = "PASS" if res["passed"] else "FAIL"
-        print(f"[{status_icon}] {res['scenario_id']}: {res['title']} | {res['latency_ms']}ms | Tools: {res['tools_called']}")
+        print(f"[{status_icon}] {res['scenario_id']}: {res['title']} | {res['latency_ms']}ms | Cost: ${res['estimated_cost_usd']} | Tools: {res['tools_called']}")
         
     passed_count = sum(1 for r in results if r["passed"])
     accuracy = (passed_count / len(results)) * 100.0
@@ -263,6 +347,7 @@ def evaluate_model(
     
     summary = {
         "model_id": model_id,
+        "provider": provider,
         "total_tests": len(results),
         "passed": passed_count,
         "accuracy_pct": round(accuracy, 1),
@@ -284,25 +369,46 @@ def main():
     """Main CLI entrypoint for running evaluations."""
     dataset_path = os.path.join(os.path.dirname(__file__), "datasets", "test_scenarios.json")
     
-    # Check if AWS Bedrock credentials allow live invocation or use mock mode
+    # Parse CLI flags
     mock_mode = "--mock" in sys.argv or os.getenv("EVAL_MOCK_MODE", "false").lower() == "true"
     
-    # If no model specified via argument, run the default candidate list
-    target_models = [m for m in sys.argv[1:] if not m.startswith("--")]
+    provider = "bedrock"
+    if "--provider" in sys.argv:
+        p_idx = sys.argv.index("--provider")
+        if p_idx + 1 < len(sys.argv):
+            provider = sys.argv[p_idx + 1].lower()
+            
+    # Extract target models (filter out flags and their arguments)
+    target_models = []
+    skip_next = False
+    for arg in sys.argv[1:]:
+        if skip_next:
+            skip_next = False
+            continue
+        if arg == "--provider":
+            skip_next = True
+            continue
+        if arg.startswith("--"):
+            continue
+        target_models.append(arg)
+        
     if not target_models:
-        target_models = CANDIDATE_MODELS[:2]  # Test top 2 candidates
+        if provider == "openrouter":
+            target_models = ["amazon/nova-lite-v1", "anthropic/claude-sonnet-4"]
+        else:
+            target_models = CANDIDATE_MODELS[:2]
         
     all_summaries = []
     for m in target_models:
         try:
-            summary = evaluate_model(m, dataset_path, mock_mode=mock_mode)
+            summary = evaluate_model(m, dataset_path, mock_mode=mock_mode, provider=provider)
             all_summaries.append(summary)
         except Exception as e:
             print(f"Error evaluating {m}: {e}")
-            if "Operation not allowed" in str(e) or "ValidationException" in str(e):
+            if not mock_mode and provider == "bedrock" and ("Operation not allowed" in str(e) or "ValidationException" in str(e)):
                 print("\n[NOTE] AWS Bedrock model access requires enabling the model in the AWS Console.")
                 print("Re-running in local deterministic simulation mode with: --mock")
-                summary = evaluate_model(m, dataset_path, mock_mode=True)
+                summary = evaluate_model(m, dataset_path, mock_mode=True, provider=provider)
                 all_summaries.append(summary)
 
     # Save summary report to JSON

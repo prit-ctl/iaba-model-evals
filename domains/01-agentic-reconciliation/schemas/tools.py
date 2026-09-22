@@ -74,3 +74,41 @@ def get_bedrock_tools() -> List[Dict[str, Any]]:
             }
         }
     ]
+
+
+def get_openai_tools() -> List[Dict[str, Any]]:
+    """Returns the 4 tools formatted for OpenAI-compatible tool calling (OpenRouter/Groq)."""
+    return [
+        {
+            "type": "function",
+            "function": {
+                "name": "fetch_settlement_feed",
+                "description": "Retrieves clearinghouse / bank settlement statement entries for a counterparty and date.",
+                "parameters": FetchSettlementFeedInput.model_json_schema()
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "get_internal_ledger_entries",
+                "description": "Queries internal ERP / General Ledger for matching booking records by transaction ID or reference.",
+                "parameters": GetInternalLedgerEntriesInput.model_json_schema()
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "query_fx_rate",
+                "description": "Retrieves the historical spot exchange rate between two currencies for a given date.",
+                "parameters": QueryFxRateInput.model_json_schema()
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "post_reconciliation_action",
+                "description": "Applies an automated reconciliation adjustment or flags discrepancy for human auditor review.",
+                "parameters": PostReconciliationActionInput.model_json_schema()
+            }
+        }
+    ]
