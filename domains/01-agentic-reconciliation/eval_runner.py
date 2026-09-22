@@ -112,17 +112,35 @@ def call_openrouter_converse(
         "temperature": 0.0,
         "max_tokens": 1024
     }
-    # Retry up to 3 times on transient network drops
-    for attempt in range(3):
+    # Retry up to 5 times on transient network drops or in-flight budget cooldowns
+    for attempt in range(5):
         try:
-            with httpx.Client(timeout=90.0) as client:
+            with httpx.Client(timeout=120.0) as client:
                 res = client.post(url, headers=headers, json=payload)
-                if res.status_code != 200:
+                if res.status_code == 402 and "in_flight_budget_exhausted" in res.text:
+                    retry_wait = 15.0
+                    try:
+                        err_json = res.json()
+                        hdr_wait = err_json.get("error", {}).get("metadata", {}).get("headers", {}).get("Retry-After")
+                        if hdr_wait:
+                            retry_wait = float(hdr_wait)
+                    except Exception:
+                        pass
+                    # If OpenRouter asks for > 30s, wait in smaller chunks and log
+                    wait_time = min(retry_wait, 35.0)
+                    print(f" [402 in-flight limit: cooling down {wait_time:.0f}s before retry {attempt+1}/5]...", flush=True)
+                    time.sleep(wait_time)
+                    continue
+                elif res.status_code == 429:
+                    print(f" [429 rate limited: cooling down 15s before retry {attempt+1}/5]...", flush=True)
+                    time.sleep(15.0)
+                    continue
+                elif res.status_code != 200:
                     raise RuntimeError(f"OpenRouter API Error {res.status_code}: {res.text}")
                 return res.json()
         except (httpx.TimeoutException, httpx.NetworkError) as net_err:
-            if attempt < 2:
-                time.sleep(2.0)
+            if attempt < 4:
+                time.sleep(3.0)
                 continue
             raise net_err
 
@@ -351,6 +369,9 @@ def evaluate_model(
         results.append(res)
         status_icon = "PASS" if res["passed"] else "FAIL"
         print(f"[{status_icon}] {res['scenario_id']}: {res['title']} | {res['latency_ms']}ms | Cost: ${res['estimated_cost_usd']} | Tools: {res['tools_called']}")
+        # Brief cooldown for high-demand models to let OpenRouter in-flight balances settle
+        if provider == "openrouter" and "anthropic" in model_id.lower():
+            time.sleep(3.0)
         
     passed_count = sum(1 for r in results if r["passed"])
     accuracy = (passed_count / len(results)) * 100.0 if results else 0.0
