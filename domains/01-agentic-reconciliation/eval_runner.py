@@ -365,7 +365,33 @@ def evaluate_model(
     
     results = []
     for sc in scenarios:
-        res = run_single_scenario(bedrock_client, model_id, sc, mock_mode=mock_mode, provider=provider)
+        res = None
+        for attempt in range(3):
+            try:
+                res = run_single_scenario(bedrock_client, model_id, sc, mock_mode=mock_mode, provider=provider)
+                break
+            except Exception as e:
+                print(f" [Warning: error on {sc['id']} attempt {attempt+1}/3: {e}]", flush=True)
+                time.sleep(5.0)
+        
+        if res is None:
+            # Fallback placeholder if completely unreachable after 3 tries
+            res = {
+                "scenario_id": sc["id"],
+                "title": sc.get("title", ""),
+                "category": sc.get("category", ""),
+                "model_id": model_id,
+                "passed": False,
+                "tools_called": [],
+                "expected_tools": sc.get("expected_tools", []),
+                "actions_taken": [],
+                "expected_action": sc.get("expected_action", ""),
+                "latency_ms": 0,
+                "input_tokens": 0,
+                "output_tokens": 0,
+                "estimated_cost_usd": 0.0
+            }
+            
         results.append(res)
         status_icon = "PASS" if res["passed"] else "FAIL"
         print(f"[{status_icon}] {res['scenario_id']}: {res['title']} | {res['latency_ms']}ms | Cost: ${res['estimated_cost_usd']} | Tools: {res['tools_called']}")
