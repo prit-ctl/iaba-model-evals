@@ -111,11 +111,19 @@ def call_openrouter_converse(
         "temperature": 0.0,
         "max_tokens": 1024
     }
-    with httpx.Client(timeout=60.0) as client:
-        res = client.post(url, headers=headers, json=payload)
-        if res.status_code != 200:
-            raise RuntimeError(f"OpenRouter API Error {res.status_code}: {res.text}")
-        return res.json()
+    # Retry up to 3 times on transient network drops
+    for attempt in range(3):
+        try:
+            with httpx.Client(timeout=90.0) as client:
+                res = client.post(url, headers=headers, json=payload)
+                if res.status_code != 200:
+                    raise RuntimeError(f"OpenRouter API Error {res.status_code}: {res.text}")
+                return res.json()
+        except (httpx.TimeoutException, httpx.NetworkError) as net_err:
+            if attempt < 2:
+                time.sleep(2.0)
+                continue
+            raise net_err
 
 
 def call_bedrock_converse(
@@ -317,11 +325,17 @@ def evaluate_model(
     model_id: str,
     scenarios_file: str,
     mock_mode: bool = False,
-    provider: str = "bedrock"
+    provider: str = "bedrock",
+    start_from: int = 1,
+    limit: Optional[int] = None
 ) -> Dict[str, Any]:
     """Runs all scenarios for a given model and calculates summary statistics."""
     with open(scenarios_file, "r") as f:
-        scenarios = json.load(f)
+        all_scenarios = json.load(f)
+        
+    start_idx = max(0, start_from - 1)
+    end_idx = (start_idx + limit) if limit else len(all_scenarios)
+    scenarios = all_scenarios[start_idx:end_idx]
         
     bedrock_client = None
     if not mock_mode and provider == "bedrock":
@@ -329,7 +343,7 @@ def evaluate_model(
         
     print(f"\n========================================================")
     print(f"Evaluating Model: {model_id} (Provider: {provider}, Mock: {mock_mode})")
-    print(f"Total Scenarios: {len(scenarios)}")
+    print(f"Scenarios: {len(scenarios)} (Resuming from #{start_from})")
     print(f"========================================================")
     
     results = []
@@ -340,14 +354,15 @@ def evaluate_model(
         print(f"[{status_icon}] {res['scenario_id']}: {res['title']} | {res['latency_ms']}ms | Cost: ${res['estimated_cost_usd']} | Tools: {res['tools_called']}")
         
     passed_count = sum(1 for r in results if r["passed"])
-    accuracy = (passed_count / len(results)) * 100.0
-    avg_latency = sum(r["latency_ms"] for r in results) / len(results)
+    accuracy = (passed_count / len(results)) * 100.0 if results else 0.0
+    avg_latency = sum(r["latency_ms"] for r in results) / len(results) if results else 0.0
     total_cost = sum(r["estimated_cost_usd"] for r in results)
-    cost_per_1k = (total_cost / len(results)) * 1000
+    cost_per_1k = (total_cost / len(results)) * 1000 if results else 0.0
     
     summary = {
         "model_id": model_id,
         "provider": provider,
+        "start_scenario": start_from,
         "total_tests": len(results),
         "passed": passed_count,
         "accuracy_pct": round(accuracy, 1),
@@ -378,6 +393,18 @@ def main():
         if p_idx + 1 < len(sys.argv):
             provider = sys.argv[p_idx + 1].lower()
             
+    start_from = 1
+    if "--start-from" in sys.argv:
+        s_idx = sys.argv.index("--start-from")
+        if s_idx + 1 < len(sys.argv):
+            start_from = int(sys.argv[s_idx + 1])
+            
+    limit = None
+    if "--limit" in sys.argv:
+        l_idx = sys.argv.index("--limit")
+        if l_idx + 1 < len(sys.argv):
+            limit = int(sys.argv[l_idx + 1])
+            
     # Extract target models (filter out flags and their arguments)
     target_models = []
     skip_next = False
@@ -385,7 +412,7 @@ def main():
         if skip_next:
             skip_next = False
             continue
-        if arg == "--provider":
+        if arg in ["--provider", "--start-from", "--limit"]:
             skip_next = True
             continue
         if arg.startswith("--"):
@@ -401,14 +428,14 @@ def main():
     all_summaries = []
     for m in target_models:
         try:
-            summary = evaluate_model(m, dataset_path, mock_mode=mock_mode, provider=provider)
+            summary = evaluate_model(m, dataset_path, mock_mode=mock_mode, provider=provider, start_from=start_from, limit=limit)
             all_summaries.append(summary)
         except Exception as e:
             print(f"Error evaluating {m}: {e}")
             if not mock_mode and provider == "bedrock" and ("Operation not allowed" in str(e) or "ValidationException" in str(e)):
                 print("\n[NOTE] AWS Bedrock model access requires enabling the model in the AWS Console.")
                 print("Re-running in local deterministic simulation mode with: --mock")
-                summary = evaluate_model(m, dataset_path, mock_mode=True, provider=provider)
+                summary = evaluate_model(m, dataset_path, mock_mode=True, provider=provider, start_from=start_from, limit=limit)
                 all_summaries.append(summary)
 
     # Save summary report to JSON
