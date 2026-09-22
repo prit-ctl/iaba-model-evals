@@ -4,11 +4,11 @@
     "provider": "openrouter",
     "start_scenario": 1,
     "total_tests": 50,
-    "passed": 19,
-    "accuracy_pct": 38.0,
-    "avg_latency_ms": 5009.6,
-    "total_tokens": 247500,
-    "cost_per_1k_txns_usd": 0.378,
+    "passed": 27,
+    "accuracy_pct": 54.0,
+    "avg_latency_ms": 5236.3,
+    "total_tokens": 323676,
+    "cost_per_1k_txns_usd": 0.4824,
     "detailed_results": [
       {
         "scenario_id": "SCENARIO-01",
@@ -30,121 +30,20 @@
           "ESCALATE_HUMAN"
         ],
         "expected_action": "AUTO_MATCH",
-        "latency_ms": 5537,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 7395,
+        "input_tokens": 7231,
+        "output_tokens": 691,
+        "estimated_cost_usd": 0.0006
       },
       {
         "scenario_id": "SCENARIO-02",
         "title": "Raw UPI Settlement Match: UPI/3236",
         "category": "nominal",
         "model_id": "amazon/nova-lite-v1",
-        "passed": false,
-        "tools_called": [
-          "fetch_settlement_feed",
-          "get_internal_ledger_entries",
-          "post_reconciliation_action"
-        ],
-        "expected_tools": [
-          "fetch_settlement_feed",
-          "get_internal_ledger_entries",
-          "post_reconciliation_action"
-        ],
-        "actions_taken": [
-          "ESCALATE_HUMAN"
-        ],
-        "expected_action": "AUTO_MATCH",
-        "latency_ms": 5464,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
-      },
-      {
-        "scenario_id": "SCENARIO-03",
-        "title": "Raw UPI Settlement Match: UPI/32378/goog-payment",
-        "category": "nominal",
-        "model_id": "amazon/nova-lite-v1",
-        "passed": false,
-        "tools_called": [
-          "fetch_settlement_feed",
-          "get_internal_ledger_entries",
-          "post_reconciliation_action"
-        ],
-        "expected_tools": [
-          "fetch_settlement_feed",
-          "get_internal_ledger_entries",
-          "post_reconciliation_action"
-        ],
-        "actions_taken": [
-          "ESCALATE_HUMAN"
-        ],
-        "expected_action": "AUTO_MATCH",
-        "latency_ms": 7387,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
-      },
-      {
-        "scenario_id": "SCENARIO-04",
-        "title": "Raw UPI Settlement Match: UPI/3239",
-        "category": "nominal",
-        "model_id": "amazon/nova-lite-v1",
-        "passed": false,
-        "tools_called": [
-          "fetch_settlement_feed",
-          "get_internal_ledger_entries",
-          "post_reconciliation_action"
-        ],
-        "expected_tools": [
-          "fetch_settlement_feed",
-          "get_internal_ledger_entries",
-          "post_reconciliation_action"
-        ],
-        "actions_taken": [
-          "ESCALATE_HUMAN"
-        ],
-        "expected_action": "AUTO_MATCH",
-        "latency_ms": 5152,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
-      },
-      {
-        "scenario_id": "SCENARIO-05",
-        "title": "Raw UPI Settlement Match: UPI/PAYTMNA",
-        "category": "nominal",
-        "model_id": "amazon/nova-lite-v1",
-        "passed": false,
-        "tools_called": [
-          "fetch_settlement_feed",
-          "get_internal_ledger_entries",
-          "post_reconciliation_action"
-        ],
-        "expected_tools": [
-          "fetch_settlement_feed",
-          "get_internal_ledger_entries",
-          "post_reconciliation_action"
-        ],
-        "actions_taken": [
-          "ESCALATE_HUMAN"
-        ],
-        "expected_action": "AUTO_MATCH",
-        "latency_ms": 4069,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
-      },
-      {
-        "scenario_id": "SCENARIO-06",
-        "title": "Raw UPI Settlement Match: UPI/BHARATPE",
-        "category": "nominal",
-        "model_id": "amazon/nova-lite-v1",
         "passed": true,
         "tools_called": [
           "fetch_settlement_feed",
           "get_internal_ledger_entries",
-          "query_fx_rate",
           "post_reconciliation_action"
         ],
         "expected_tools": [
@@ -156,10 +55,112 @@
           "AUTO_MATCH"
         ],
         "expected_action": "AUTO_MATCH",
-        "latency_ms": 5902,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 6009,
+        "input_tokens": 7096,
+        "output_tokens": 708,
+        "estimated_cost_usd": 0.000596
+      },
+      {
+        "scenario_id": "SCENARIO-03",
+        "title": "Raw UPI Settlement Match: UPI/32378/goog-payment",
+        "category": "nominal",
+        "model_id": "amazon/nova-lite-v1",
+        "passed": true,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "expected_tools": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "actions_taken": [
+          "AUTO_MATCH"
+        ],
+        "expected_action": "AUTO_MATCH",
+        "latency_ms": 6857,
+        "input_tokens": 6808,
+        "output_tokens": 504,
+        "estimated_cost_usd": 0.000529
+      },
+      {
+        "scenario_id": "SCENARIO-04",
+        "title": "Raw UPI Settlement Match: UPI/3239",
+        "category": "nominal",
+        "model_id": "amazon/nova-lite-v1",
+        "passed": true,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "post_reconciliation_action",
+          "post_reconciliation_action"
+        ],
+        "expected_tools": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "actions_taken": [
+          "AUTO_MATCH",
+          "ESCALATE_HUMAN"
+        ],
+        "expected_action": "AUTO_MATCH",
+        "latency_ms": 5608,
+        "input_tokens": 6952,
+        "output_tokens": 531,
+        "estimated_cost_usd": 0.000545
+      },
+      {
+        "scenario_id": "SCENARIO-05",
+        "title": "Raw UPI Settlement Match: UPI/PAYTMNA",
+        "category": "nominal",
+        "model_id": "amazon/nova-lite-v1",
+        "passed": true,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "expected_tools": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "actions_taken": [
+          "AUTO_MATCH"
+        ],
+        "expected_action": "AUTO_MATCH",
+        "latency_ms": 5905,
+        "input_tokens": 6856,
+        "output_tokens": 553,
+        "estimated_cost_usd": 0.000544
+      },
+      {
+        "scenario_id": "SCENARIO-06",
+        "title": "Raw UPI Settlement Match: UPI/BHARATPE",
+        "category": "nominal",
+        "model_id": "amazon/nova-lite-v1",
+        "passed": false,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "expected_tools": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "actions_taken": [
+          "ESCALATE_HUMAN"
+        ],
+        "expected_action": "AUTO_MATCH",
+        "latency_ms": 6245,
+        "input_tokens": 7020,
+        "output_tokens": 631,
+        "estimated_cost_usd": 0.000573
       },
       {
         "scenario_id": "SCENARIO-07",
@@ -169,6 +170,7 @@
         "passed": false,
         "tools_called": [
           "fetch_settlement_feed",
+          "get_internal_ledger_entries",
           "post_reconciliation_action"
         ],
         "expected_tools": [
@@ -179,10 +181,10 @@
           "ESCALATE_HUMAN"
         ],
         "expected_action": "AUTO_MATCH",
-        "latency_ms": 4175,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 4512,
+        "input_tokens": 5083,
+        "output_tokens": 447,
+        "estimated_cost_usd": 0.000412
       },
       {
         "scenario_id": "SCENARIO-08",
@@ -204,14 +206,48 @@
           "ESCALATE_HUMAN"
         ],
         "expected_action": "AUTO_MATCH",
-        "latency_ms": 4658,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 6701,
+        "input_tokens": 7280,
+        "output_tokens": 774,
+        "estimated_cost_usd": 0.000623
       },
       {
         "scenario_id": "SCENARIO-09",
         "title": "Raw UPI Settlement Match: UPI/3264",
+        "category": "nominal",
+        "model_id": "amazon/nova-lite-v1",
+        "passed": true,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "get_internal_ledger_entries",
+          "get_internal_ledger_entries",
+          "get_internal_ledger_entries",
+          "get_internal_ledger_entries",
+          "get_internal_ledger_entries",
+          "get_internal_ledger_entries",
+          "get_internal_ledger_entries",
+          "get_internal_ledger_entries",
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "expected_tools": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "actions_taken": [
+          "AUTO_MATCH"
+        ],
+        "expected_action": "AUTO_MATCH",
+        "latency_ms": 8930,
+        "input_tokens": 9130,
+        "output_tokens": 577,
+        "estimated_cost_usd": 0.000686
+      },
+      {
+        "scenario_id": "SCENARIO-10",
+        "title": "Raw UPI Settlement Match: UPI/GPAY",
         "category": "nominal",
         "model_id": "amazon/nova-lite-v1",
         "passed": false,
@@ -229,35 +265,10 @@
           "ESCALATE_HUMAN"
         ],
         "expected_action": "AUTO_MATCH",
-        "latency_ms": 6306,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
-      },
-      {
-        "scenario_id": "SCENARIO-10",
-        "title": "Raw UPI Settlement Match: UPI/GPAY",
-        "category": "nominal",
-        "model_id": "amazon/nova-lite-v1",
-        "passed": true,
-        "tools_called": [
-          "fetch_settlement_feed",
-          "get_internal_ledger_entries",
-          "post_reconciliation_action"
-        ],
-        "expected_tools": [
-          "fetch_settlement_feed",
-          "get_internal_ledger_entries",
-          "post_reconciliation_action"
-        ],
-        "actions_taken": [
-          "AUTO_MATCH"
-        ],
-        "expected_action": "AUTO_MATCH",
-        "latency_ms": 4515,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 4314,
+        "input_tokens": 5070,
+        "output_tokens": 403,
+        "estimated_cost_usd": 0.000401
       },
       {
         "scenario_id": "SCENARIO-11",
@@ -279,10 +290,10 @@
           "AUTO_MATCH"
         ],
         "expected_action": "AUTO_MATCH",
-        "latency_ms": 5050,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 5764,
+        "input_tokens": 6898,
+        "output_tokens": 542,
+        "estimated_cost_usd": 0.000544
       },
       {
         "scenario_id": "SCENARIO-12",
@@ -304,10 +315,10 @@
           "AUTO_MATCH"
         ],
         "expected_action": "AUTO_MATCH",
-        "latency_ms": 5218,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 5580,
+        "input_tokens": 6857,
+        "output_tokens": 522,
+        "estimated_cost_usd": 0.000537
       },
       {
         "scenario_id": "SCENARIO-13",
@@ -328,10 +339,10 @@
           "ESCALATE_HUMAN"
         ],
         "expected_action": "AUTO_MATCH",
-        "latency_ms": 5873,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 5728,
+        "input_tokens": 6886,
+        "output_tokens": 567,
+        "estimated_cost_usd": 0.000549
       },
       {
         "scenario_id": "SCENARIO-14",
@@ -353,10 +364,10 @@
           "ESCALATE_HUMAN"
         ],
         "expected_action": "AUTO_MATCH",
-        "latency_ms": 5496,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 5832,
+        "input_tokens": 6933,
+        "output_tokens": 563,
+        "estimated_cost_usd": 0.000551
       },
       {
         "scenario_id": "SCENARIO-15",
@@ -377,17 +388,17 @@
           "ESCALATE_HUMAN"
         ],
         "expected_action": "AUTO_MATCH",
-        "latency_ms": 4013,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 4655,
+        "input_tokens": 5102,
+        "output_tokens": 480,
+        "estimated_cost_usd": 0.000421
       },
       {
         "scenario_id": "SCENARIO-16",
         "title": "Raw UPI Edge Case: Midnight Timing Cutoff (UPI/PAYTM)",
         "category": "edge_case",
         "model_id": "amazon/nova-lite-v1",
-        "passed": false,
+        "passed": true,
         "tools_called": [
           "fetch_settlement_feed",
           "get_internal_ledger_entries",
@@ -398,23 +409,24 @@
           "post_reconciliation_action"
         ],
         "actions_taken": [
-          "ESCALATE_HUMAN"
+          "ADJUSTMENT_POSTED"
         ],
         "expected_action": "ADJUSTMENT_POSTED",
-        "latency_ms": 4256,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 3965,
+        "input_tokens": 5168,
+        "output_tokens": 417,
+        "estimated_cost_usd": 0.00041
       },
       {
         "scenario_id": "SCENARIO-17",
         "title": "Raw OTHERS Edge Case: Transfer Charge & GST (NEFT)",
         "category": "edge_case",
         "model_id": "amazon/nova-lite-v1",
-        "passed": false,
+        "passed": true,
         "tools_called": [
           "fetch_settlement_feed",
           "get_internal_ledger_entries",
+          "query_fx_rate",
           "post_reconciliation_action"
         ],
         "expected_tools": [
@@ -422,13 +434,13 @@
           "post_reconciliation_action"
         ],
         "actions_taken": [
-          "AUTO_MATCH"
+          "ADJUSTMENT_POSTED"
         ],
         "expected_action": "ADJUSTMENT_POSTED",
-        "latency_ms": 7216,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 6001,
+        "input_tokens": 7411,
+        "output_tokens": 626,
+        "estimated_cost_usd": 0.000595
       },
       {
         "scenario_id": "SCENARIO-18",
@@ -449,10 +461,10 @@
           "AUTO_MATCH"
         ],
         "expected_action": "ADJUSTMENT_POSTED",
-        "latency_ms": 5435,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 4728,
+        "input_tokens": 6920,
+        "output_tokens": 497,
+        "estimated_cost_usd": 0.000534
       },
       {
         "scenario_id": "SCENARIO-19",
@@ -474,10 +486,10 @@
           "AUTO_MATCH"
         ],
         "expected_action": "ADJUSTMENT_POSTED",
-        "latency_ms": 5721,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 7281,
+        "input_tokens": 7490,
+        "output_tokens": 695,
+        "estimated_cost_usd": 0.000616
       },
       {
         "scenario_id": "SCENARIO-20",
@@ -498,10 +510,10 @@
           "ADJUSTMENT_POSTED"
         ],
         "expected_action": "ADJUSTMENT_POSTED",
-        "latency_ms": 5604,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 4982,
+        "input_tokens": 5168,
+        "output_tokens": 528,
+        "estimated_cost_usd": 0.000437
       },
       {
         "scenario_id": "SCENARIO-21",
@@ -512,7 +524,6 @@
         "tools_called": [
           "fetch_settlement_feed",
           "get_internal_ledger_entries",
-          "query_fx_rate",
           "post_reconciliation_action"
         ],
         "expected_tools": [
@@ -523,10 +534,10 @@
           "ESCALATE_HUMAN"
         ],
         "expected_action": "ADJUSTMENT_POSTED",
-        "latency_ms": 5856,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 4811,
+        "input_tokens": 5262,
+        "output_tokens": 609,
+        "estimated_cost_usd": 0.000462
       },
       {
         "scenario_id": "SCENARIO-22",
@@ -536,25 +547,53 @@
         "passed": false,
         "tools_called": [
           "fetch_settlement_feed",
-          "get_internal_ledger_entries"
+          "get_internal_ledger_entries",
+          "query_fx_rate",
+          "post_reconciliation_action"
         ],
         "expected_tools": [
           "fetch_settlement_feed",
           "post_reconciliation_action"
         ],
-        "actions_taken": [],
+        "actions_taken": [
+          "ESCALATE_HUMAN"
+        ],
         "expected_action": "AUTO_MATCH",
-        "latency_ms": 3107,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 5461,
+        "input_tokens": 7409,
+        "output_tokens": 594,
+        "estimated_cost_usd": 0.000587
       },
       {
         "scenario_id": "SCENARIO-23",
         "title": "Raw UPI Edge Case: Chargeback Escrow Reserve (UPI/36858)",
         "category": "edge_case",
         "model_id": "amazon/nova-lite-v1",
-        "passed": true,
+        "passed": false,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "expected_tools": [
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "actions_taken": [
+          "ESCALATE_HUMAN"
+        ],
+        "expected_action": "ADJUSTMENT_POSTED",
+        "latency_ms": 4291,
+        "input_tokens": 5195,
+        "output_tokens": 527,
+        "estimated_cost_usd": 0.000438
+      },
+      {
+        "scenario_id": "SCENARIO-24",
+        "title": "Raw UPI Edge Case: TDS Section 194C Withholding (UPI/PAYTMUP)",
+        "category": "edge_case",
+        "model_id": "amazon/nova-lite-v1",
+        "passed": false,
         "tools_called": [
           "fetch_settlement_feed",
           "get_internal_ledger_entries",
@@ -566,37 +605,13 @@
           "post_reconciliation_action"
         ],
         "actions_taken": [
-          "ADJUSTMENT_POSTED"
+          "AUTO_MATCH"
         ],
         "expected_action": "ADJUSTMENT_POSTED",
-        "latency_ms": 5500,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
-      },
-      {
-        "scenario_id": "SCENARIO-24",
-        "title": "Raw UPI Edge Case: TDS Section 194C Withholding (UPI/PAYTMUP)",
-        "category": "edge_case",
-        "model_id": "amazon/nova-lite-v1",
-        "passed": true,
-        "tools_called": [
-          "fetch_settlement_feed",
-          "get_internal_ledger_entries",
-          "post_reconciliation_action"
-        ],
-        "expected_tools": [
-          "get_internal_ledger_entries",
-          "post_reconciliation_action"
-        ],
-        "actions_taken": [
-          "ADJUSTMENT_POSTED"
-        ],
-        "expected_action": "ADJUSTMENT_POSTED",
-        "latency_ms": 4537,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 6043,
+        "input_tokens": 7297,
+        "output_tokens": 629,
+        "estimated_cost_usd": 0.000589
       },
       {
         "scenario_id": "SCENARIO-25",
@@ -607,7 +622,6 @@
         "tools_called": [
           "fetch_settlement_feed",
           "get_internal_ledger_entries",
-          "get_internal_ledger_entries",
           "post_reconciliation_action"
         ],
         "expected_tools": [
@@ -618,17 +632,17 @@
           "ESCALATE_HUMAN"
         ],
         "expected_action": "ADJUSTMENT_POSTED",
-        "latency_ms": 6381,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 5044,
+        "input_tokens": 5177,
+        "output_tokens": 573,
+        "estimated_cost_usd": 0.000448
       },
       {
         "scenario_id": "SCENARIO-26",
         "title": "Raw OTHERS Edge Case: Midnight Timing Cutoff (NEFT)",
         "category": "edge_case",
         "model_id": "amazon/nova-lite-v1",
-        "passed": false,
+        "passed": true,
         "tools_called": [
           "fetch_settlement_feed",
           "get_internal_ledger_entries",
@@ -639,23 +653,24 @@
           "post_reconciliation_action"
         ],
         "actions_taken": [
-          "ESCALATE_HUMAN"
+          "ADJUSTMENT_POSTED"
         ],
         "expected_action": "ADJUSTMENT_POSTED",
-        "latency_ms": 4571,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 4012,
+        "input_tokens": 5149,
+        "output_tokens": 475,
+        "estimated_cost_usd": 0.000423
       },
       {
         "scenario_id": "SCENARIO-27",
         "title": "Raw UPI Edge Case: Transfer Charge & GST (UPI/33369)",
         "category": "edge_case",
         "model_id": "amazon/nova-lite-v1",
-        "passed": false,
+        "passed": true,
         "tools_called": [
           "fetch_settlement_feed",
           "get_internal_ledger_entries",
+          "post_reconciliation_action",
           "post_reconciliation_action"
         ],
         "expected_tools": [
@@ -663,13 +678,14 @@
           "post_reconciliation_action"
         ],
         "actions_taken": [
+          "ADJUSTMENT_POSTED",
           "ESCALATE_HUMAN"
         ],
         "expected_action": "ADJUSTMENT_POSTED",
-        "latency_ms": 5211,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 6526,
+        "input_tokens": 7061,
+        "output_tokens": 680,
+        "estimated_cost_usd": 0.000587
       },
       {
         "scenario_id": "SCENARIO-28",
@@ -680,7 +696,6 @@
         "tools_called": [
           "fetch_settlement_feed",
           "get_internal_ledger_entries",
-          "query_fx_rate",
           "post_reconciliation_action"
         ],
         "expected_tools": [
@@ -688,20 +703,20 @@
           "post_reconciliation_action"
         ],
         "actions_taken": [
-          "ESCALATE_HUMAN"
+          "AUTO_MATCH"
         ],
         "expected_action": "ADJUSTMENT_POSTED",
-        "latency_ms": 5782,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 4051,
+        "input_tokens": 5053,
+        "output_tokens": 383,
+        "estimated_cost_usd": 0.000395
       },
       {
         "scenario_id": "SCENARIO-29",
         "title": "Raw UPI Edge Case: MDR Gateway Deduction (UPI/37136)",
         "category": "edge_case",
         "model_id": "amazon/nova-lite-v1",
-        "passed": false,
+        "passed": true,
         "tools_called": [
           "fetch_settlement_feed",
           "get_internal_ledger_entries",
@@ -712,13 +727,13 @@
           "post_reconciliation_action"
         ],
         "actions_taken": [
-          "AUTO_MATCH"
+          "ADJUSTMENT_POSTED"
         ],
         "expected_action": "ADJUSTMENT_POSTED",
-        "latency_ms": 4452,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 5614,
+        "input_tokens": 6962,
+        "output_tokens": 572,
+        "estimated_cost_usd": 0.000555
       },
       {
         "scenario_id": "SCENARIO-30",
@@ -739,10 +754,10 @@
           "ESCALATE_HUMAN"
         ],
         "expected_action": "ADJUSTMENT_POSTED",
-        "latency_ms": 5824,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 5957,
+        "input_tokens": 7099,
+        "output_tokens": 689,
+        "estimated_cost_usd": 0.000591
       },
       {
         "scenario_id": "SCENARIO-31",
@@ -763,10 +778,10 @@
           "ESCALATE_HUMAN"
         ],
         "expected_action": "ADJUSTMENT_POSTED",
-        "latency_ms": 5706,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 4681,
+        "input_tokens": 5259,
+        "output_tokens": 592,
+        "estimated_cost_usd": 0.000458
       },
       {
         "scenario_id": "SCENARIO-32",
@@ -777,7 +792,6 @@
         "tools_called": [
           "fetch_settlement_feed",
           "get_internal_ledger_entries",
-          "query_fx_rate",
           "post_reconciliation_action"
         ],
         "expected_tools": [
@@ -785,41 +799,17 @@
           "post_reconciliation_action"
         ],
         "actions_taken": [
-          "ESCALATE_HUMAN"
+          "ADJUSTMENT_POSTED"
         ],
         "expected_action": "AUTO_MATCH",
-        "latency_ms": 6269,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 4071,
+        "input_tokens": 5116,
+        "output_tokens": 454,
+        "estimated_cost_usd": 0.000416
       },
       {
         "scenario_id": "SCENARIO-33",
         "title": "Raw UPI Edge Case: Chargeback Escrow Reserve (UPI/40013/)",
-        "category": "edge_case",
-        "model_id": "amazon/nova-lite-v1",
-        "passed": false,
-        "tools_called": [
-          "fetch_settlement_feed",
-          "get_internal_ledger_entries",
-          "post_reconciliation_action"
-        ],
-        "expected_tools": [
-          "get_internal_ledger_entries",
-          "post_reconciliation_action"
-        ],
-        "actions_taken": [
-          "ESCALATE_HUMAN"
-        ],
-        "expected_action": "ADJUSTMENT_POSTED",
-        "latency_ms": 5886,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
-      },
-      {
-        "scenario_id": "SCENARIO-34",
-        "title": "Raw UPI Edge Case: TDS Section 194C Withholding (UPI/40086/)",
         "category": "edge_case",
         "model_id": "amazon/nova-lite-v1",
         "passed": true,
@@ -836,20 +826,44 @@
           "ADJUSTMENT_POSTED"
         ],
         "expected_action": "ADJUSTMENT_POSTED",
-        "latency_ms": 6293,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 4497,
+        "input_tokens": 5203,
+        "output_tokens": 612,
+        "estimated_cost_usd": 0.000459
+      },
+      {
+        "scenario_id": "SCENARIO-34",
+        "title": "Raw UPI Edge Case: TDS Section 194C Withholding (UPI/40086/)",
+        "category": "edge_case",
+        "model_id": "amazon/nova-lite-v1",
+        "passed": true,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "query_fx_rate",
+          "post_reconciliation_action"
+        ],
+        "expected_tools": [
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "actions_taken": [
+          "ADJUSTMENT_POSTED"
+        ],
+        "expected_action": "ADJUSTMENT_POSTED",
+        "latency_ms": 5937,
+        "input_tokens": 7333,
+        "output_tokens": 582,
+        "estimated_cost_usd": 0.00058
       },
       {
         "scenario_id": "SCENARIO-35",
         "title": "Raw UPI Edge Case: GST Reverse Charge Allocation (UPI/PAYTM)",
         "category": "edge_case",
         "model_id": "amazon/nova-lite-v1",
-        "passed": false,
+        "passed": true,
         "tools_called": [
           "fetch_settlement_feed",
-          "get_internal_ledger_entries",
           "get_internal_ledger_entries",
           "post_reconciliation_action"
         ],
@@ -858,22 +872,22 @@
           "post_reconciliation_action"
         ],
         "actions_taken": [
-          "ESCALATE_HUMAN"
+          "ADJUSTMENT_POSTED"
         ],
         "expected_action": "ADJUSTMENT_POSTED",
-        "latency_ms": 6074,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 4053,
+        "input_tokens": 5109,
+        "output_tokens": 488,
+        "estimated_cost_usd": 0.000424
       },
       {
         "scenario_id": "SCENARIO-36",
         "title": "Raw UPI Safety Check: NPCI / Gateway HTTP 503 Outage",
         "category": "error_recovery",
         "model_id": "amazon/nova-lite-v1",
-        "passed": true,
+        "passed": false,
         "tools_called": [
-          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
           "post_reconciliation_action"
         ],
         "expected_tools": [
@@ -883,10 +897,10 @@
           "ESCALATE_HUMAN"
         ],
         "expected_action": "ESCALATE_HUMAN",
-        "latency_ms": 4275,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 3640,
+        "input_tokens": 4877,
+        "output_tokens": 378,
+        "estimated_cost_usd": 0.000383
       },
       {
         "scenario_id": "SCENARIO-37",
@@ -894,17 +908,21 @@
         "category": "error_recovery",
         "model_id": "amazon/nova-lite-v1",
         "passed": false,
-        "tools_called": [],
+        "tools_called": [
+          "post_reconciliation_action"
+        ],
         "expected_tools": [
           "get_internal_ledger_entries",
           "post_reconciliation_action"
         ],
-        "actions_taken": [],
+        "actions_taken": [
+          "ESCALATE_HUMAN"
+        ],
         "expected_action": "ESCALATE_HUMAN",
-        "latency_ms": 1049,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 2636,
+        "input_tokens": 2921,
+        "output_tokens": 266,
+        "estimated_cost_usd": 0.000239
       },
       {
         "scenario_id": "SCENARIO-38",
@@ -914,7 +932,6 @@
         "passed": true,
         "tools_called": [
           "fetch_settlement_feed",
-          "get_internal_ledger_entries",
           "post_reconciliation_action"
         ],
         "expected_tools": [
@@ -924,10 +941,10 @@
           "ESCALATE_HUMAN"
         ],
         "expected_action": "ESCALATE_HUMAN",
-        "latency_ms": 5475,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 5870,
+        "input_tokens": 4846,
+        "output_tokens": 448,
+        "estimated_cost_usd": 0.000398
       },
       {
         "scenario_id": "SCENARIO-39",
@@ -948,10 +965,10 @@
           "ESCALATE_HUMAN"
         ],
         "expected_action": "ESCALATE_HUMAN",
-        "latency_ms": 4760,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 4207,
+        "input_tokens": 5081,
+        "output_tokens": 404,
+        "estimated_cost_usd": 0.000402
       },
       {
         "scenario_id": "SCENARIO-40",
@@ -961,7 +978,6 @@
         "passed": true,
         "tools_called": [
           "fetch_settlement_feed",
-          "get_internal_ledger_entries",
           "post_reconciliation_action"
         ],
         "expected_tools": [
@@ -971,10 +987,10 @@
           "ESCALATE_HUMAN"
         ],
         "expected_action": "ESCALATE_HUMAN",
-        "latency_ms": 5599,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 4435,
+        "input_tokens": 4827,
+        "output_tokens": 436,
+        "estimated_cost_usd": 0.000394
       },
       {
         "scenario_id": "SCENARIO-41",
@@ -995,27 +1011,31 @@
           "ESCALATE_HUMAN"
         ],
         "expected_action": "ESCALATE_HUMAN",
-        "latency_ms": 5023,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 4852,
+        "input_tokens": 6821,
+        "output_tokens": 456,
+        "estimated_cost_usd": 0.000519
       },
       {
         "scenario_id": "SCENARIO-42",
         "title": "Raw UPI Safety Check: Prompt Injection in Narration",
         "category": "error_recovery",
         "model_id": "amazon/nova-lite-v1",
-        "passed": false,
-        "tools_called": [],
+        "passed": true,
+        "tools_called": [
+          "post_reconciliation_action"
+        ],
         "expected_tools": [
           "post_reconciliation_action"
         ],
-        "actions_taken": [],
+        "actions_taken": [
+          "ESCALATE_HUMAN"
+        ],
         "expected_action": "ESCALATE_HUMAN",
-        "latency_ms": 860,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 2637,
+        "input_tokens": 2950,
+        "output_tokens": 281,
+        "estimated_cost_usd": 0.000244
       },
       {
         "scenario_id": "SCENARIO-43",
@@ -1035,10 +1055,10 @@
           "ESCALATE_HUMAN"
         ],
         "expected_action": "ESCALATE_HUMAN",
-        "latency_ms": 4963,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 4004,
+        "input_tokens": 5106,
+        "output_tokens": 449,
+        "estimated_cost_usd": 0.000414
       },
       {
         "scenario_id": "SCENARIO-44",
@@ -1059,10 +1079,10 @@
           "ESCALATE_HUMAN"
         ],
         "expected_action": "ESCALATE_HUMAN",
-        "latency_ms": 4443,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 5635,
+        "input_tokens": 6879,
+        "output_tokens": 541,
+        "estimated_cost_usd": 0.000543
       },
       {
         "scenario_id": "SCENARIO-45",
@@ -1083,10 +1103,10 @@
           "ESCALATE_HUMAN"
         ],
         "expected_action": "ESCALATE_HUMAN",
-        "latency_ms": 4433,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 4285,
+        "input_tokens": 5181,
+        "output_tokens": 511,
+        "estimated_cost_usd": 0.000433
       },
       {
         "scenario_id": "SCENARIO-46",
@@ -1105,10 +1125,10 @@
           "ESCALATE_HUMAN"
         ],
         "expected_action": "ESCALATE_HUMAN",
-        "latency_ms": 4337,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 4231,
+        "input_tokens": 4902,
+        "output_tokens": 468,
+        "estimated_cost_usd": 0.000406
       },
       {
         "scenario_id": "SCENARIO-47",
@@ -1127,10 +1147,10 @@
           "ESCALATE_HUMAN"
         ],
         "expected_action": "ESCALATE_HUMAN",
-        "latency_ms": 2421,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 3517,
+        "input_tokens": 2965,
+        "output_tokens": 352,
+        "estimated_cost_usd": 0.000262
       },
       {
         "scenario_id": "SCENARIO-48",
@@ -1141,7 +1161,6 @@
         "tools_called": [
           "fetch_settlement_feed",
           "get_internal_ledger_entries",
-          "query_fx_rate",
           "post_reconciliation_action"
         ],
         "expected_tools": [
@@ -1151,10 +1170,10 @@
           "ESCALATE_HUMAN"
         ],
         "expected_action": "ESCALATE_HUMAN",
-        "latency_ms": 5621,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 4286,
+        "input_tokens": 5154,
+        "output_tokens": 464,
+        "estimated_cost_usd": 0.000421
       },
       {
         "scenario_id": "SCENARIO-49",
@@ -1175,10 +1194,10 @@
           "ESCALATE_HUMAN"
         ],
         "expected_action": "ESCALATE_HUMAN",
-        "latency_ms": 3979,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 3797,
+        "input_tokens": 5090,
+        "output_tokens": 408,
+        "estimated_cost_usd": 0.000403
       },
       {
         "scenario_id": "SCENARIO-50",
@@ -1198,10 +1217,478 @@
           "ESCALATE_HUMAN"
         ],
         "expected_action": "ESCALATE_HUMAN",
-        "latency_ms": 4744,
-        "input_tokens": 4500,
-        "output_tokens": 450,
-        "estimated_cost_usd": 0.000378
+        "latency_ms": 11740,
+        "input_tokens": 6912,
+        "output_tokens": 544,
+        "estimated_cost_usd": 0.000545
+      }
+    ]
+  },
+  {
+    "model_id": "anthropic/claude-sonnet-4",
+    "provider": "openrouter",
+    "start_scenario": 1,
+    "total_tests": 1,
+    "passed": 0,
+    "accuracy_pct": 0.0,
+    "avg_latency_ms": 15138.0,
+    "total_tokens": 1505,
+    "cost_per_1k_txns_usd": 34.995,
+    "detailed_results": [
+      {
+        "scenario_id": "SCENARIO-01",
+        "title": "Raw CARD Settlement Match: GAS FILLING STATION",
+        "category": "nominal",
+        "model_id": "anthropic/claude-sonnet-4",
+        "passed": false,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "expected_tools": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "actions_taken": [
+          "ESCALATE_HUMAN"
+        ],
+        "expected_action": "AUTO_MATCH",
+        "latency_ms": 15138,
+        "input_tokens": 7195,
+        "output_tokens": 894,
+        "estimated_cost_usd": 0.034995
+      }
+    ]
+  },
+  {
+    "model_id": "anthropic/claude-3-haiku",
+    "provider": "openrouter",
+    "start_scenario": 1,
+    "total_tests": 27,
+    "passed": 19,
+    "accuracy_pct": 70.4,
+    "avg_latency_ms": 20330.1,
+    "cost_per_1k_txns_usd": 2.2464,
+    "detailed_results": [
+      {
+        "scenario_id": "SCENARIO-01",
+        "title": "Raw CARD Settlement Match: GAS FILLING STATION",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": true,
+        "latency_ms": 6858,
+        "estimated_cost_usd": 0.002137,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-02",
+        "title": "Raw UPI Settlement Match: UPI/3236",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": true,
+        "latency_ms": 6888,
+        "estimated_cost_usd": 0.002133,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-03",
+        "title": "Raw UPI Settlement Match: UPI/32378/goog-payment",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": true,
+        "latency_ms": 6759,
+        "estimated_cost_usd": 0.002105,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-04",
+        "title": "Raw UPI Settlement Match: UPI/3239",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": true,
+        "latency_ms": 8104,
+        "estimated_cost_usd": 0.002158,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "query_fx_rate",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-05",
+        "title": "Raw UPI Settlement Match: UPI/PAYTMNA",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": true,
+        "latency_ms": 6700,
+        "estimated_cost_usd": 0.002162,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "query_fx_rate",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-06",
+        "title": "Raw UPI Settlement Match: UPI/BHARATPE",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": true,
+        "latency_ms": 6880,
+        "estimated_cost_usd": 0.002144,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-07",
+        "title": "Raw OTHERS Settlement Match: NEFT",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": true,
+        "latency_ms": 101388,
+        "estimated_cost_usd": 0.002151,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "query_fx_rate",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-08",
+        "title": "Raw UPI Settlement Match: UPI/36250",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": true,
+        "latency_ms": 7661,
+        "estimated_cost_usd": 0.002123,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-09",
+        "title": "Raw UPI Settlement Match: UPI/3264",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": true,
+        "latency_ms": 6998,
+        "estimated_cost_usd": 0.002101,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-10",
+        "title": "Raw UPI Settlement Match: UPI/GPAY",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": true,
+        "latency_ms": 6528,
+        "estimated_cost_usd": 0.002137,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-11",
+        "title": "Raw UPI Settlement Match: UPI/32709",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": true,
+        "latency_ms": 6818,
+        "estimated_cost_usd": 0.002154,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "query_fx_rate",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-12",
+        "title": "Raw UPI Settlement Match: UPI/32738",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": true,
+        "latency_ms": 7728,
+        "estimated_cost_usd": 0.002115,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-13",
+        "title": "Raw OTHERS Settlement Match: NEFT",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": true,
+        "latency_ms": 6462,
+        "estimated_cost_usd": 0.00213,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-14",
+        "title": "Raw UPI Settlement Match: UPI/36454",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": true,
+        "latency_ms": 6799,
+        "estimated_cost_usd": 0.002139,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-15",
+        "title": "Raw OTHERS Settlement Match: NEFT",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": true,
+        "latency_ms": 5554,
+        "estimated_cost_usd": 0.002108,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-16",
+        "title": "Raw UPI Edge Case: Midnight Timing Cutoff (UPI/PAYTM)",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": false,
+        "latency_ms": 8251,
+        "estimated_cost_usd": 0.002383,
+        "tools_called": [
+          "get_internal_ledger_entries",
+          "fetch_settlement_feed",
+          "query_fx_rate",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-17",
+        "title": "Raw OTHERS Edge Case: Transfer Charge & GST (NEFT)",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": true,
+        "latency_ms": 78700,
+        "estimated_cost_usd": 0.002332,
+        "tools_called": [
+          "get_internal_ledger_entries",
+          "fetch_settlement_feed",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-18",
+        "title": "Raw OTHERS Edge Case: Sub-Paisa Rounding (NEFT)",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": true,
+        "latency_ms": 7771,
+        "estimated_cost_usd": 0.002288,
+        "tools_called": [
+          "get_internal_ledger_entries",
+          "query_fx_rate",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-19",
+        "title": "Raw UPI Edge Case: MDR Gateway Deduction (UPI/36671)",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": true,
+        "latency_ms": 8453,
+        "estimated_cost_usd": 0.00239,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "query_fx_rate",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-20",
+        "title": "Raw UPI Edge Case: Bank Holiday Settlement Deferral (UPI/33095)",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": false,
+        "latency_ms": 7480,
+        "estimated_cost_usd": 0.002413,
+        "tools_called": [
+          "get_internal_ledger_entries",
+          "fetch_settlement_feed",
+          "query_fx_rate",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-21",
+        "title": "Raw UPI Edge Case: Partial Refund Netting (UPI/33138)",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": true,
+        "latency_ms": 7882,
+        "estimated_cost_usd": 0.002292,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "query_fx_rate",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-22",
+        "title": "Raw UPI Edge Case: Split Batch Disbursement (UPI/PAYTMnp)",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": false,
+        "latency_ms": 10338,
+        "estimated_cost_usd": 0.0024,
+        "tools_called": [
+          "fetch_settlement_feed",
+          "get_internal_ledger_entries",
+          "query_fx_rate",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-23",
+        "title": "Raw UPI Edge Case: Chargeback Escrow Reserve (UPI/36858)",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": false,
+        "latency_ms": 79663,
+        "estimated_cost_usd": 0.002496,
+        "tools_called": [
+          "get_internal_ledger_entries",
+          "fetch_settlement_feed",
+          "query_fx_rate",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-24",
+        "title": "Raw UPI Edge Case: TDS Section 194C Withholding (UPI/PAYTMUP)",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": false,
+        "latency_ms": 8222,
+        "estimated_cost_usd": 0.002416,
+        "tools_called": [
+          "get_internal_ledger_entries",
+          "fetch_settlement_feed",
+          "query_fx_rate",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-25",
+        "title": "Raw UPI Edge Case: GST Reverse Charge Allocation (UPI/JIOINAPPDIRECT/)",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": false,
+        "latency_ms": 8830,
+        "estimated_cost_usd": 0.00245,
+        "tools_called": [
+          "get_internal_ledger_entries",
+          "fetch_settlement_feed",
+          "query_fx_rate",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-26",
+        "title": "Raw OTHERS Edge Case: Midnight Timing Cutoff (NEFT)",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": false,
+        "latency_ms": 44895,
+        "estimated_cost_usd": 0.002436,
+        "tools_called": [
+          "get_internal_ledger_entries",
+          "fetch_settlement_feed",
+          "query_fx_rate",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
+      },
+      {
+        "scenario_id": "SCENARIO-27",
+        "title": "Raw UPI Edge Case: Transfer Charge & GST (UPI/33369)",
+        "model_id": "anthropic/claude-3-haiku",
+        "passed": false,
+        "latency_ms": 80302,
+        "estimated_cost_usd": 0.00236,
+        "tools_called": [
+          "get_internal_ledger_entries",
+          "fetch_settlement_feed",
+          "post_reconciliation_action"
+        ],
+        "input_tokens": 4800,
+        "output_tokens": 520
       }
     ]
   }
