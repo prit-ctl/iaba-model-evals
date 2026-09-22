@@ -158,116 +158,146 @@ def run_single_scenario(
     total_input_tokens = 0
     total_output_tokens = 0
     
-    start_time = time.time()
-    
-    if mock_mode:
-        time.sleep(0.08)  # Minimal pacing
-        tools_called = scenario["expected_tools"]
-        actions_taken = [scenario["expected_action"]]
-        total_input_tokens = 350
-        total_output_tokens = 120
-        elapsed_ms = int((time.time() - start_time) * 1000)
-    elif provider == "openrouter":
-        openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
-        if not openrouter_api_key:
-            raise ValueError("OPENROUTER_API_KEY not found in environment or .env file.")
+    # Helper to execute the scenario body
+    def execute_body():
+        nonlocal total_input_tokens, total_output_tokens, tools_called, actions_taken, schema_valid
+        start_t = time.time()
         
-        openai_tools = get_openai_tools()
-        chat_messages = [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": scenario["prompt"]}
-        ]
-        
-        for _ in range(4):
-            resp = call_openrouter_converse(openrouter_api_key, model_id, chat_messages, openai_tools)
-            usage = resp.get("usage", {})
-            total_input_tokens += usage.get("prompt_tokens", 0)
-            total_output_tokens += usage.get("completion_tokens", 0)
+        if mock_mode:
+            time.sleep(0.08)  # Minimal pacing
+            tools_called = scenario["expected_tools"]
+            actions_taken = [scenario["expected_action"]]
+            total_input_tokens = 350
+            total_output_tokens = 120
+            return int((time.time() - start_t) * 1000)
+        elif provider == "openrouter":
+            openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
+            if not openrouter_api_key:
+                raise ValueError("OPENROUTER_API_KEY not found in environment or .env file.")
             
-            choice = resp["choices"][0]["message"]
-            chat_messages.append(choice)
+            openai_tools = get_openai_tools()
+            chat_messages = [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": scenario["prompt"]}
+            ]
             
-            tool_calls = choice.get("tool_calls", [])
-            if not tool_calls:
-                break
+            for _ in range(4):
+                resp = call_openrouter_converse(openrouter_api_key, model_id, chat_messages, openai_tools)
+                usage = resp.get("usage", {})
+                total_input_tokens += usage.get("prompt_tokens", 0)
+                total_output_tokens += usage.get("completion_tokens", 0)
                 
-            for tc in tool_calls:
-                t_name = tc["function"]["name"]
-                t_id = tc["id"]
-                try:
-                    t_args = json.loads(tc["function"].get("arguments", "{}"))
-                except Exception:
-                    t_args = {}
+                choice = resp["choices"][0]["message"]
+                chat_messages.append(choice)
+                
+                tool_calls = choice.get("tool_calls", [])
+                if not tool_calls:
+                    break
                     
-                tools_called.append(t_name)
-                if t_name == "post_reconciliation_action":
-                    actions_taken.append(t_args.get("action_type", ""))
+                for tc in tool_calls:
+                    t_name = tc["function"]["name"]
+                    t_id = tc["id"]
+                    try:
+                        t_args = json.loads(tc["function"].get("arguments", "{}"))
+                    except Exception:
+                        t_args = {}
+                        
+                    tools_called.append(t_name)
+                    if t_name == "post_reconciliation_action":
+                        actions_taken.append(t_args.get("action_type", ""))
+                        
+                    res_payload = execute_mock_tool(t_name, t_args)
+                    chat_messages.append({
+                        "role": "tool",
+                        "tool_call_id": t_id,
+                        "name": t_name,
+                        "content": json.dumps(res_payload)
+                    })
+            return int((time.time() - start_t) * 1000)
+        else:
+            # Real AWS Bedrock Converse execution loop (max 4 turns)
+            messages = [{"role": "user", "content": [{"text": scenario["prompt"]}]}]
+            for _ in range(4):
+                response = call_bedrock_converse(bedrock_client, model_id, messages, tools)
+                usage = response.get("usage", {})
+                total_input_tokens += usage.get("inputTokens", 0)
+                total_output_tokens += usage.get("outputTokens", 0)
+                
+                msg = response["output"]["message"]
+                messages.append(msg)
+                
+                tool_use_requests = [c["toolUse"] for c in msg.get("content", []) if "toolUse" in c]
+                if not tool_use_requests:
+                    break
                     
-                res_payload = execute_mock_tool(t_name, t_args)
-                chat_messages.append({
-                    "role": "tool",
-                    "tool_call_id": t_id,
-                    "name": t_name,
-                    "content": json.dumps(res_payload)
-                })
-        elapsed_ms = int((time.time() - start_time) * 1000)
-    else:
-        # Real AWS Bedrock Converse execution loop (max 4 turns)
-        messages = [{"role": "user", "content": [{"text": scenario["prompt"]}]}]
-        max_turns = 4
-        for _ in range(max_turns):
-            response = call_bedrock_converse(bedrock_client, model_id, messages, tools)
-            
-            usage = response.get("usage", {})
-            total_input_tokens += usage.get("inputTokens", 0)
-            total_output_tokens += usage.get("outputTokens", 0)
-            
-            msg = response["output"]["message"]
-            messages.append(msg)
-            
-            # Check for tool requests in model output
-            tool_use_requests = [c["toolUse"] for c in msg.get("content", []) if "toolUse" in c]
-            
-            if not tool_use_requests:
-                break  # Model has finished reasoning
-                
-            tool_results = []
-            for req in tool_use_requests:
-                t_name = req["name"]
-                t_args = req.get("input", {})
-                t_id = req["toolUseId"]
-                
-                tools_called.append(t_name)
-                if t_name == "post_reconciliation_action":
-                    actions_taken.append(t_args.get("action_type", ""))
-                
-                # Execute deterministic local mock
-                result_payload = execute_mock_tool(t_name, t_args)
-                tool_results.append({
-                    "toolResult": {
-                        "toolUseId": t_id,
-                        "content": [{"json": result_payload}]
-                    }
-                })
-                
-            messages.append({"role": "user", "content": tool_results})
-            
-        elapsed_ms = int((time.time() - start_time) * 1000)
+                tool_results = []
+                for req in tool_use_requests:
+                    t_name = req["name"]
+                    t_args = req.get("input", {})
+                    t_id = req["toolUseId"]
+                    
+                    tools_called.append(t_name)
+                    if t_name == "post_reconciliation_action":
+                        actions_taken.append(t_args.get("action_type", ""))
+                    
+                    result_payload = execute_mock_tool(t_name, t_args)
+                    tool_results.append({
+                        "toolResult": {
+                            "toolUseId": t_id,
+                            "content": [{"json": result_payload}]
+                        }
+                    })
+                messages.append({"role": "user", "content": tool_results})
+            return int((time.time() - start_t) * 1000)
 
-    # Evaluate scoring criteria
+    # Wrap inside Langfuse trace context so that real elapsed wall-clock time is captured
+    if LANGFUSE_AVAILABLE and langfuse_client:
+        try:
+            with langfuse_client.start_as_current_observation(
+                name=f"eval-{scenario_id}",
+                as_type="agent",
+                input={"prompt": scenario.get("prompt", "")},
+                metadata={
+                    "model_id": model_id,
+                    "category": scenario.get("category", ""),
+                    "title": scenario.get("title", ""),
+                }
+            ) as span:
+                elapsed_ms = execute_body()
+                expected_tools = scenario.get("expected_tools", [])
+                expected_action = scenario.get("expected_action", "")
+                tools_matched = all(t in tools_called for t in expected_tools)
+                action_matched = (expected_action in actions_taken) if expected_action else True
+                passed = tools_matched and action_matched and schema_valid
+                
+                in_rate, out_rate = MODEL_PRICING.get(model_id, MODEL_PRICING.get("default", (1.00, 3.00)))
+                estimated_cost = (total_input_tokens * (in_rate / 1_000_000.0)) + (total_output_tokens * (out_rate / 1_000_000.0))
+                
+                span.update(
+                    output={"actions_taken": actions_taken, "tools_called": tools_called},
+                    metadata={
+                        "model_id": model_id,
+                        "category": scenario.get("category", ""),
+                        "title": scenario.get("title", ""),
+                        "expected_action": expected_action,
+                        "expected_tools": expected_tools,
+                    },
+                    usage_details={"input": total_input_tokens, "output": total_output_tokens},
+                    cost_details={"total": estimated_cost}
+                )
+                span.score(name="accuracy", value=1.0 if passed else 0.0, comment=f"Expected: {expected_action}, Got: {actions_taken}")
+                span.score(name="latency_ms", value=float(elapsed_ms))
+        except Exception:
+            elapsed_ms = execute_body()
+    else:
+        elapsed_ms = execute_body()
+
     expected_tools = scenario.get("expected_tools", [])
     expected_action = scenario.get("expected_action", "")
-    
-    # 1. Tool selection accuracy (did model call the expected tools?)
     tools_matched = all(t in tools_called for t in expected_tools)
-    
-    # 2. Final action correctness
     action_matched = (expected_action in actions_taken) if expected_action else True
-    
-    # 3. Overall pass/fail
     passed = tools_matched and action_matched and schema_valid
     
-    # 4. Token cost estimate dynamically calculated based on model pricing table
     in_rate, out_rate = MODEL_PRICING.get(model_id, MODEL_PRICING.get("default", (1.00, 3.00)))
     estimated_cost = (total_input_tokens * (in_rate / 1_000_000.0)) + (total_output_tokens * (out_rate / 1_000_000.0))
     
@@ -286,38 +316,6 @@ def run_single_scenario(
         "output_tokens": total_output_tokens,
         "estimated_cost_usd": round(estimated_cost, 6)
     }
-    
-    # Optional Langfuse trace logging
-    if LANGFUSE_AVAILABLE and langfuse_client:
-        try:
-            with langfuse_client.start_as_current_observation(
-                name=f"eval-{scenario_id}",
-                as_type="agent",
-                input={"prompt": scenario.get("prompt", "")},
-                output={"actions_taken": actions_taken, "tools_called": tools_called},
-                metadata={
-                    "model_id": model_id,
-                    "category": scenario.get("category", ""),
-                    "title": scenario.get("title", ""),
-                    "expected_action": expected_action,
-                    "expected_tools": expected_tools,
-                },
-                usage_details={"input": total_input_tokens, "output": total_output_tokens},
-                cost_details={"total": estimated_cost}
-            ) as span:
-                span.score(
-                    name="accuracy",
-                    value=1.0 if passed else 0.0,
-                    comment=f"Expected: {expected_action}, Got: {actions_taken}"
-                )
-                span.score(
-                    name="latency_ms",
-                    value=float(elapsed_ms)
-                )
-        except Exception as e:
-            pass  # Tracing failure should never crash the benchmark
-            pass  # Tracing failure should never crash the benchmark
-            
     return result
 
 
