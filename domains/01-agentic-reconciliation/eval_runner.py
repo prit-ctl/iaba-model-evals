@@ -117,7 +117,21 @@ def call_openrouter_converse(
         try:
             with httpx.Client(timeout=120.0) as client:
                 res = client.post(url, headers=headers, json=payload)
-                if res.status_code == 402 and "in_flight_budget_exhausted" in res.text:
+                if res.status_code == 402 and "fewer max_tokens" in res.text:
+                    # Extract maximum affordable tokens if reported
+                    afford = 600
+                    try:
+                        import re
+                        m = re.search(r"can only afford (\d+)", res.text)
+                        if m:
+                            afford = max(100, int(m.group(1)) - 20)
+                    except Exception:
+                        pass
+                    payload["max_tokens"] = afford
+                    print(f" [402 credit limit: adjusted max_tokens to {afford}, retrying {attempt+1}/5]...", flush=True)
+                    time.sleep(1.0)
+                    continue
+                elif res.status_code == 402 and "in_flight_budget_exhausted" in res.text:
                     retry_wait = 15.0
                     try:
                         err_json = res.json()
